@@ -1,12 +1,15 @@
 import React from "react";
-import NavBar from "./components/NavBar";
-import HeroSection from "./components/HeroSection";
+import { Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
     <>
-      <NavBar />
-      <HeroSection />
+      <ToastContainer />
+      <Routes>
+        <Route path="/login" element={<Login />} />
+      </Routes>
     </>
   );
 }
