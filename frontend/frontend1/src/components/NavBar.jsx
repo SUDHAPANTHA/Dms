@@ -16,6 +16,9 @@ function NavBar() {
         <a href="#contact" className="text-gray-600">
           Contact
         </a>
+        <a href="/user-register" className="text-gray-600">
+          Register
+        </a>
         <button
           onClick={() => navigate("/login")}
           className="px-4 py-2 bg-orange-500 text-white rounded-md"

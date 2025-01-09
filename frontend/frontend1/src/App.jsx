@@ -9,6 +9,7 @@ import UserDashBoard from "./UserPages/UserDashBoard";
 import UserLogin from "./UserPages/UserLogin";
 import NavBar from "./components/NavBar";
 import UserSideBar from "./UserPages/UserSideBar";
+import UserRegisterPage from "./UserPages/UserRegisterPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/admin-dashboard" element={<DashBoard />} />
         <Route path="/user-dashboard" element={<UserDashBoard />} />
         <Route path="/user-login" element={<UserLogin />} />
+        <Route path="/user-register" element={<UserRegisterPage />} />
       </Routes>
     </>
   );
