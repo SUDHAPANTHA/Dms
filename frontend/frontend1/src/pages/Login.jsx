@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+
 function Login() {
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
   const navigate = useNavigate();
-  //Login ko functionality
+
+  // Login functionality
   async function loginAdmin(e) {
     e.preventDefault();
     console.log("Login Form Submitted");
@@ -28,15 +32,15 @@ function Login() {
       toast.error("Something Went Wrong");
     }
   }
+
   return (
-    <div className="flex h-screen justify-between items-center px-8 py-32 bg-gradient-to-r from-white via-orange-400 to-white">
+    <div className="flex h-screen justify-between items-center px-8 py-32 bg-gradient-to-r from-white via-orange-200 to-white">
       <form
         onSubmit={loginAdmin}
-        action=""
-        className="bg-blue-400 justify-center items-center p-10 border rounded-lg  max-w-md w-full shadow-lg"
+        className="bg-orange-50 justify-center items-center p-10 border rounded-lg max-w-md w-full shadow-lg mx-auto"
       >
-        <h2 className="text-white text-xl text-center">Login Page</h2>
-        <div className="my-2">
+        <h2 className="text-xl text-center mb-4">Login Page</h2>
+        <div className="my-4">
           <input
             className="border rounded-xl p-2 w-full"
             type="text"
@@ -45,20 +49,27 @@ function Login() {
             value={email}
           />
         </div>
-        <div className="my-2">
+        <div className="my-4 relative">
           <input
             className="border rounded-xl p-2 w-full"
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             onChange={(e) => setPassword(e.target.value)}
             value={password}
           />
+          <span
+            className="absolute right-3 top-2.5 cursor-pointer text-gray-600"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </span>
         </div>
-        <button className="bg-blue-700 border rounded-md p-2 w-full text-white">
+        <button className="bg-orange-700 border rounded-md p-2 w-full text-white">
           Login
         </button>
       </form>
     </div>
   );
 }
+
 export default Login;
