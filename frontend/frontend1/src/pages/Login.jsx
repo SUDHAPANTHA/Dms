@@ -29,7 +29,7 @@ function Login() {
     }
   }
   return (
-    <div className="flex bg-blue-100 items-center justify-center max-w-full mx-auto h-screen">
+    <div className="flex h-screen justify-between items-center px-8 py-32 bg-gradient-to-r from-white via-orange-400 to-white">
       <form
         onSubmit={loginAdmin}
         action=""

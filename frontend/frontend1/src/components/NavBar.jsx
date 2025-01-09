@@ -1,6 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function NavBar() {
+  const navigate = useNavigate();
   return (
     <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
       <div className="text-xl font-bold mx-10">Logo</div>
@@ -14,7 +16,10 @@ function NavBar() {
         <a href="#contact" className="text-gray-600">
           Contact
         </a>
-        <button className="px-4 py-2 bg-orange-500 text-white rounded-md">
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 bg-orange-500 text-white rounded-md"
+        >
           Login
         </button>
       </div>
