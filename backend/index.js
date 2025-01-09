@@ -6,6 +6,34 @@ import connectDB from "./dbconfig/conn.js";
 import AdminModel from "./models/admin-model.js";
 const app = express();
 const jwt = require("jsonwebtoken");
+const BlacklistedToken = require("../models/BlacklistedToken");
+
+exports.authenticateToken = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1]; // Extract token
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  try {
+    // Check if the token is blacklisted
+    const isBlacklisted = await BlacklistedToken.findOne({ token });
+    if (isBlacklisted) {
+      return res
+        .status(401)
+        .json({ message: "Token is blacklisted. Please log in again." });
+    }
+
+    // Verify the token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Attach user info to the request
+    next();
+  } catch (err) {
+    res.status(403).json({ message: "Invalid or expired token." });
+  }
+};
+
 app.use(express.json());
 app.use(cors());
 //Api For Admin Register
@@ -39,6 +67,9 @@ app.post("/admin-register", async (req, res) => {
       .json({ msg: "Internal server error", err: error.message });
   }
 });
+// Routes
+const authRoutes = require("./routes/authRoutes");
+app.use("/api/auth", authRoutes);
 // Api For Login Admin
 app.post("/admin-login", async (req, res) => {
   try {
