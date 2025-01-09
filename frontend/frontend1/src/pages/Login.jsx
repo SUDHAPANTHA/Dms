@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false); // State for toggling password visibility
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-
-  // Login functionality
   async function loginAdmin(e) {
     e.preventDefault();
     console.log("Login Form Submitted");
@@ -23,7 +21,7 @@ function Login() {
       console.log("Server response:", data);
       if (data.status === 200) {
         toast.success(data.msg);
-        navigate("/user-dashboard");
+        navigate("/admin-dashboard");
       } else {
         toast.error(data.msg);
       }
@@ -64,7 +62,7 @@ function Login() {
             {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
           </span>
         </div>
-        <button className="bg-orange-700 border rounded-md p-2 w-full text-white">
+        <button className="bg-customOrange border rounded-md p-2 w-full text-white">
           Login
         </button>
       </form>

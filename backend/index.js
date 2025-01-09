@@ -1,9 +1,11 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import cors from "cors";
+import { JsonWebTokenError } from "jsonwebtoken";
 import connectDB from "./dbconfig/conn.js";
 import AdminModel from "./models/admin-model.js";
 const app = express();
+const jwt = require("jsonwebtoken");
 app.use(express.json());
 app.use(cors());
 //Api For Admin Register
