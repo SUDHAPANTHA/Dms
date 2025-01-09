@@ -65,6 +65,10 @@ function Login() {
         <button className="bg-customOrange border rounded-md p-2 w-full text-white">
           Login
         </button>
+        <div className="flex gap-36 m-4">
+          <p>Forgot Password</p>
+          <p onClick={() => navigate("/user-login")}>UserLogin</p>
+        </div>
       </form>
     </div>
   );

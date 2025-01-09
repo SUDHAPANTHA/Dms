@@ -5,16 +5,22 @@ import { ToastContainer } from "react-toastify";
 import HomePage from "./pages/HomePage";
 import SideBar from "./components/SideBar";
 import DashBoard from "./pages/DashBoard";
+import UserDashBoard from "./UserPages/UserDashBoard";
+import UserLogin from "./UserPages/UserLogin";
+import NavBar from "./components/NavBar";
 
 function App() {
   return (
     <>
+      <NavBar />
       <ToastContainer />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sidebar" element={<SideBar />} />
         <Route path="/admin-dashboard" element={<DashBoard />} />
+        <Route path="/user-dashboard" element={<UserDashBoard />} />
+        <Route path="/user-login" element={<UserLogin />} />
       </Routes>
     </>
   );
