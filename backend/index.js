@@ -1,8 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import cors from "cors";
-import { JsonWebTokenError } from "jsonwebtoken";
-import connectDB from "./dbconfig/conn.js";
+import cors from "cors";y
 import AdminModel from "./models/admin-model.js";
 const app = express();
 const jwt = require("jsonwebtoken");
@@ -67,9 +65,6 @@ app.post("/admin-register", async (req, res) => {
       .json({ msg: "Internal server error", err: error.message });
   }
 });
-// Routes
-const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
 // Api For Login Admin
 app.post("/admin-login", async (req, res) => {
   try {
