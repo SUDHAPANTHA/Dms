@@ -5,6 +5,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true, required: true },
 });
 
-const StudentModel = mongoose.model("user", userSchema);
+const UserModel = mongoose.model("user", userSchema);
 
 export default UserModel;

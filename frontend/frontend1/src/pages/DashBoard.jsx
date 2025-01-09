@@ -1,11 +1,9 @@
 import React from "react";
 import SideBar from "../components/SideBar";
-import NavBar from "../components/NavBar";
 
 function DashBoard() {
   return (
     <>
-      <NavBar />
       <div className="flex">
         <SideBar />
 

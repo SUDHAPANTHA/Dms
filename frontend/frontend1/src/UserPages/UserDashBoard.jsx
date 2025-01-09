@@ -1,15 +1,13 @@
 import React from "react";
-import SideBar from "../components/SideBar";
-import NavBar from "../components/NavBar";
+import UserSideBar from "./UserSideBar";
 
 function UserDashBoard() {
   return (
     <>
-      <NavBar />
       <div className="flex">
-        <SideBar />
+        <UserSideBar />
 
-        <h2 className="my-2">Welocome to Admin Dashboard</h2>
+        <h2 className="my-2">Welocome to User Dashboard</h2>
       </div>
     </>
   );

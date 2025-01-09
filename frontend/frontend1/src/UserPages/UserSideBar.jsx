@@ -11,12 +11,12 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-function SideBar() {
+function UserSideBar() {
   return (
     <>
       <nav className="w-64 bg-gradient-to-r from-white via-orange-50 to-white h-screen py-4 px-4">
         <ul className="space-y-4">
-          <p className="p-4 text-xl font-bold bg"> Admin Panel</p>
+          <p className="p-4 text-xl font-bold bg"> User Panel</p>
           <li className="bg-white rounded-xl font-bold flex p-4 mt-24">
             <FaHome size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
@@ -77,4 +77,4 @@ function SideBar() {
     </>
   );
 }
-export default SideBar;
+export default UserSideBar;

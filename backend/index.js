@@ -1,10 +1,10 @@
 import express from "express";
 import bcrypt from "bcryptjs";
 import cors from "cors";
-y;
 import AdminModel from "./models/admin-model.js";
 import StudentModel from "./models/user-model.js";
 import UserModel from "./models/user-model.js";
+import connectDB from "./dbconfig/conn.js";
 const app = express();
 app.use(express.json());
 app.use(cors());
