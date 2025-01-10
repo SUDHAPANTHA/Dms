@@ -121,6 +121,7 @@ app.post("/user-register", async (req, res) => {
     res.status(500).json({ msg: "Internal server error!" });
   }
 });
+
 //connection function call
 connectDB();
 
