@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 function NavBar() {
   const navigate = useNavigate();
   return (
-    <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
+    <nav className="flex justify-between items-center px-8 py-4 bg-gradient-to-r from-white via-orange-200 to-white shadow-md">
       <div className="text-xl font-bold mx-10">Logo</div>
       <div className="space-x-6">
         <a href="#about" className="text-gray-600">

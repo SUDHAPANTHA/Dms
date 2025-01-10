@@ -3,7 +3,7 @@ import SideImage from "../assets/img/ss.png";
 
 function HeroSection() {
   return (
-    <section className="flex h-screen justify-between items-center px-8 py-32 bg-gradient-to-r from-white via-orange-50 to-white">
+    <section className="flex h-screen justify-between items-center px-8 py-32 bg-gradient-to-r from-white via-orange-200 to-white">
       <div className="max-w-md mx-10">
         <span className="text-sm text-gray-500 uppercase tracking-wide">
           Management
