@@ -6,6 +6,7 @@ import StudentModel from "./models/user-model.js";
 import UserModel from "./models/user-model.js";
 import connectDB from "./dbconfig/conn.js";
 const app = express();
+const router = express.Router();
 app.use(express.json());
 app.use(cors());
 //Api For Admin Register
@@ -119,6 +120,90 @@ app.post("/user-register", async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ msg: "Internal server error!" });
+  }
+});
+// Get all document categories
+router.get("/document-categories", async (req, res) => {
+  try {
+    const categories = await DocumentCategory.find().populate(
+      "uploadedBy",
+      "name email"
+    );
+    res.status(200).json({ data: categories });
+  } catch (err) {
+    res.status(500).json({
+      error: "Failed to fetch document categories",
+      details: err.message,
+    });
+  }
+});
+// Get a single document category by ID
+router.get("/document-categories/:id", async (req, res) => {
+  try {
+    const category = await DocumentCategory.findById(req.params.id).populate(
+      "uploadedBy",
+      "name email"
+    );
+    if (!category) {
+      return res.status(404).json({ error: "Document category not found" });
+    }
+    res.status(200).json({ data: category });
+  } catch (err) {
+    res.status(500).json({
+      error: "Failed to fetch document category",
+      details: err.message,
+    });
+  }
+});
+// Update a document category by ID
+router.put("/document-categories/:id", async (req, res) => {
+  const { title, description } = req.body;
+
+  try {
+    const updatedCategory = await DocumentCategory.findByIdAndUpdate(
+      req.params.id,
+      { title, description },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCategory) {
+      return res.status(404).json({ error: "Document category not found" });
+    }
+
+    res
+      .status(200)
+      .json({
+        message: "Document category updated successfully",
+        data: updatedCategory,
+      });
+  } catch (err) {
+    res
+      .status(500)
+      .json({
+        error: "Failed to update document category",
+        details: err.message,
+      });
+  }
+});
+// Delete a document category by ID
+router.delete("/document-categories/:id", async (req, res) => {
+  try {
+    const deletedCategory = await DocumentCategory.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!deletedCategory) {
+      return res.status(404).json({ error: "Document category not found" });
+    }
+
+    res.status(200).json({ message: "Document category deleted successfully" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({
+        error: "Failed to delete document category",
+        details: err.message,
+      });
   }
 });
 
