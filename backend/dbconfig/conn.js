@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 const connectDB = async () => {
   try {
     const url = "mongodb://127.0.0.1:27017/dms";
+
     await mongoose.connect(url);
     console.log("Database connected!");
   } catch (error) {

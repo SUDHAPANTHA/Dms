@@ -1,12 +1,12 @@
-import express from "express"; // For ES6 import
+import express from "express"; // this is for ES6 import
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import path from "path";
+import fs from "fs"; // Import fs module
 import multer from "multer";
 
 // Import database connection and models
 import connectDB from "./dbconfig/conn.js";
-import StudentModel from "./models/user-model.js";
 import AdminModel from "./models/admin-model.js";
 import UserModel from "./models/user-model.js";
 import DocumentCategory from "./models/document-model.js";
@@ -15,88 +15,94 @@ const app = express();
 
 // Middleware
 app.use(express.json());
+// app.use(express.static("public"));
 app.use(cors());
 
-// Multer Configuration
+// Multer configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "uploads");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-    cb(null, uploadDir);
+    cb(null, ""); // Define your upload directory
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    cb(null, Date.now() + path.extname(file.originalname)); // Store file with a unique name
   },
 });
 
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const allowedFileTypes = /pdf|doc|docx|txt/;
-    const extname = allowedFileTypes.test(
-      path.extname(file.originalname).toLowerCase()
-    );
-    const mimetype = allowedFileTypes.test(file.mimetype);
+const fileFilter = (req, file, cb) => {
+  const allowedFileTypes = /pdf|doc|docx|txt/;
+  const extname = allowedFileTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
+  const mimetype = allowedFileTypes.test(file.mimetype);
 
-    if (extname && mimetype) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only .pdf, .doc, .docx, .txt formats are allowed!"));
-    }
-  },
-});
+  if (extname && mimetype) {
+    return cb(null, true); // File type is allowed
+  } else {
+    cb(new Error("File type is not supported"), false); // Reject file
+  }
+};
 
-// Home Page API
+const upload = multer({ storage, fileFilter });
+
+// API for home page
 app.get("/home", (req, res) => {
-  res.send("This is the home page");
+  res.send("This is home page");
 });
 
-// Product Page API
+// API for product page
 app.get("/product/page", (req, res) => {
   res.json({ msg: "Product page" });
 });
 
-// User Registration API
+// API to register the student
 app.post("/user-register", async (req, res) => {
   const { email, password, name } = req.body;
 
   try {
-    const existingUser = await StudentModel.findOne({ email });
-    if (existingUser) {
+    const checkEmail = await StudentModel.findOne({ email });
+
+    if (checkEmail) {
       return res.status(404).json({ msg: `${email} already exists` });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new UserModel({ email, password: hashedPassword, name });
-    await newUser.save();
+    const createUser = new UserModel({
+      email,
+      password: hashedPassword,
+      name,
+    });
+
+    await createUser.save();
 
     res.status(200).json({
       status: 200,
       msg: "User created successfully",
-      data: newUser,
+      data: createUser,
     });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error!" });
   }
 });
 
-// User Login API
+// API for user login
 app.post("/user-login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ msg: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ msg: "Password and email both are required" });
     }
 
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: "Email address not found" });
+    const validateUser = await UserModel.findOne({ email });
+    if (!validateUser) {
+      return res.status(400).json({ msg: "Email address does not exist" });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, validateUser.password);
+
     if (!isMatch) {
       return res.status(401).json({ msg: "Invalid credentials" });
     }
@@ -109,14 +115,14 @@ app.post("/user-login", async (req, res) => {
   }
 });
 
-// Admin Registration API
+// API for Admin register
 app.post("/admin-register", async (req, res) => {
   try {
     const { name, email, password, role, phone, address } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newAdmin = new AdminModel({
+    const createAdmin = new AdminModel({
       name,
       email,
       password: hashedPassword,
@@ -125,12 +131,12 @@ app.post("/admin-register", async (req, res) => {
       address,
     });
 
-    await newAdmin.save();
+    await createAdmin.save();
 
     return res.status(200).json({
       msg: "Admin created successfully",
       status: 200,
-      data: newAdmin,
+      data: createAdmin,
     });
   } catch (error) {
     return res
@@ -139,25 +145,29 @@ app.post("/admin-register", async (req, res) => {
   }
 });
 
-// Admin Get All Users API
+// API for admin to get all student details
 app.get("/admin-get-user", async (_, res) => {
   try {
-    const allUsers = await UserModel.find();
+    const findAllUser = await UserModel.find();
 
-    if (allUsers) {
-      const userData = allUsers.map((user) => ({
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      }));
+    if (findAllUser) {
+      const totalUser = findAllUser.length;
+
+      const data = findAllUser.map((std) => {
+        return {
+          id: std._id,
+          name: std.name,
+          email: std.email,
+        };
+      });
 
       return res.status(200).json({
-        userdata: userData,
-        totalUsers: allUsers.length,
+        userdata: data,
+        totalUser: totalUser,
         status: 200,
       });
     } else {
-      return res.status(400).json({ msg: "No users found" });
+      return res.status(400).json({ msg: "No student found" });
     }
   } catch (error) {
     return res
@@ -166,7 +176,7 @@ app.get("/admin-get-user", async (_, res) => {
   }
 });
 
-// Admin Login API
+// API for admin login
 app.post("/admin-login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -175,20 +185,22 @@ app.post("/admin-login", async (req, res) => {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
-    const admin = await AdminModel.findOne({ email });
-    if (!admin) {
-      return res.status(404).json({ msg: "Invalid email address" });
+    const findAdmin = await AdminModel.findOne({ email });
+
+    if (!findAdmin) {
+      return res.status(200).json({ msg: "Invalid Email address" });
     }
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    const isMatch = await bcrypt.compare(password, findAdmin.password);
+
     if (!isMatch) {
-      return res.status(401).json({ msg: "Invalid credentials" });
+      return res.status(200).json({ msg: "Invalid Credentials" });
     }
 
     return res.status(200).json({
       msg: "Login successful",
       status: 200,
-      data: admin,
+      data: findAdmin,
     });
   } catch (error) {
     return res
@@ -197,35 +209,40 @@ app.post("/admin-login", async (req, res) => {
   }
 });
 
-// Document Upload API
+// API to upload document
 app.post("/upload-document", upload.single("file"), async (req, res) => {
   try {
-    const { title, content, uploadedBy, category, last_modified } = req.body;
+    // console.log("Request Body:", req.body);
+    // console.log("Uploaded File:", req.file);
 
-    if (!title || !content || !uploadedBy || !category || !last_modified) {
+    const { title, description, uploadedBy, category, last_modified } =
+      req.body;
+
+    if (!title || !description || !uploadedBy || !category || !last_modified) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
-    const existingDocument = await DocumentCategory.findOne({ title });
-    if (existingDocument) {
+    // Validation for duplicate titles
+    const checkIfDocumentExists = await DocumentCategory.findOne({ title });
+    if (checkIfDocumentExists) {
       return res.status(402).json({ msg: `${title} already exists` });
     }
 
-    const newDocument = new DocumentCategory({
+    const createDocument = new DocumentCategory({
       title,
-      content,
+      description,
       uploadedBy,
       category,
       file: req.file.filename,
       last_modified: new Date(last_modified),
     });
 
-    await newDocument.save();
+    await createDocument.save();
 
     return res.status(200).json({
       status: 200,
       msg: "Document uploaded successfully",
-      data: newDocument,
+      data: createDocument,
     });
   } catch (error) {
     console.error("Error:", error.message);
@@ -235,7 +252,7 @@ app.post("/upload-document", upload.single("file"), async (req, res) => {
   }
 });
 
-// Document Update API
+// API to update a document category
 app.patch("/update-document/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -257,7 +274,7 @@ app.patch("/update-document/:id", async (req, res) => {
         data: updatedDocument,
       });
     } else {
-      return res.status(404).json({ msg: "Document not found" });
+      return res.status(400).json({ msg: "Document not found" });
     }
   } catch (error) {
     return res
@@ -266,7 +283,7 @@ app.patch("/update-document/:id", async (req, res) => {
   }
 });
 
-// Document Deletion API
+// API to delete a document category
 app.delete("/delete-document/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -275,11 +292,12 @@ app.delete("/delete-document/:id", async (req, res) => {
       return res.status(400).json({ msg: "Document ID is required" });
     }
 
-    const deletedDocument = await DocumentCategory.findByIdAndDelete(id);
-    if (deletedDocument) {
+    const deleteDocument = await DocumentCategory.findByIdAndDelete(id);
+
+    if (deleteDocument) {
       return res.status(200).json({
         msg: "Document deleted successfully",
-        data: deletedDocument.title,
+        data: deleteDocument.title,
       });
     } else {
       return res.status(404).json({ msg: "Document not found" });
@@ -291,16 +309,16 @@ app.delete("/delete-document/:id", async (req, res) => {
   }
 });
 
-// Get All Documents API
+// API to get all document categories
 app.get("/get-all-documents", async (req, res) => {
   try {
-    const documents = await DocumentCategory.find();
+    const findAllDocuments = await DocumentCategory.find();
 
-    if (documents) {
+    if (findAllDocuments) {
       return res.status(200).json({
         msg: "Documents retrieved successfully",
         status: 200,
-        allDocumentsData: documents,
+        allDocumentsData: findAllDocuments,
       });
     } else {
       return res.status(400).json({ msg: "No documents found" });
@@ -312,8 +330,8 @@ app.get("/get-all-documents", async (req, res) => {
   }
 });
 
-// Connect to Database
+// Connection to database
 connectDB();
 
-// Start the Server
+// Start the server
 app.listen(3000, () => console.log("Server is running on port 3000"));
