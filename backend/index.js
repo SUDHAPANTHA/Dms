@@ -21,7 +21,7 @@ app.use(cors());
 // Multer configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, ""); // Define your upload directory
+    cb(null, "uploads/"); // Define your upload directory
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // Store file with a unique name
