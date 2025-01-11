@@ -1,26 +1,33 @@
 import mongoose from "mongoose";
-const mongoose = require("mongoose");
 
-const documentCategorySchema = new mongoose.Schema(
+// Schema for Document
+const DocumentSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Title is required"],
-      trim: true,
-      maxlength: [100, "Title cannot exceed 100 characters"],
+      required: true,
     },
-    description: {
+    content: {
       type: String,
-      required: [true, "Description is required"],
-      trim: true,
+      required: true,
     },
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", 
+    category: {
+      type: String,
+      enum: ["personal", "financial", "education"], // Limit categories to specific values
+      required: true,
+    },
+    last_modified: {
+      type: Date,
+      default: Date.now,
+    },
+    file: {
+      type: String, // Path or URL to the uploaded file
       required: true,
     },
   },
-  { timestamps: true }
 );
 
-module.exports = mongoose.model("DocumentCategory", documentCategorySchema);
+// Export the model
+const Document = mongoose.model("Document", DocumentSchema);
+
+export default Document;

@@ -1,22 +1,122 @@
-import express from "express";
+import express from "express"; // For ES6 import
 import bcrypt from "bcryptjs";
 import cors from "cors";
-import AdminModel from "./models/admin-model.js";
-import StudentModel from "./models/user-model.js";
-import UserModel from "./models/user-model.js";
+import path from "path";
+import multer from "multer";
+
+// Import database connection and models
 import connectDB from "./dbconfig/conn.js";
+import StudentModel from "./models/user-model.js";
+import AdminModel from "./models/admin-model.js";
+import UserModel from "./models/user-model.js";
+import DocumentCategory from "./models/document-model.js";
+
 const app = express();
-const router = express.Router();
+
+// Middleware
 app.use(express.json());
 app.use(cors());
-//Api For Admin Register
+
+// Multer Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, "uploads");
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedFileTypes = /pdf|doc|docx|txt/;
+    const extname = allowedFileTypes.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    const mimetype = allowedFileTypes.test(file.mimetype);
+
+    if (extname && mimetype) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only .pdf, .doc, .docx, .txt formats are allowed!"));
+    }
+  },
+});
+
+// Home Page API
+app.get("/home", (req, res) => {
+  res.send("This is the home page");
+});
+
+// Product Page API
+app.get("/product/page", (req, res) => {
+  res.json({ msg: "Product page" });
+});
+
+// User Registration API
+app.post("/user-register", async (req, res) => {
+  const { email, password, name } = req.body;
+
+  try {
+    const existingUser = await StudentModel.findOne({ email });
+    if (existingUser) {
+      return res.status(404).json({ msg: `${email} already exists` });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = new UserModel({ email, password: hashedPassword, name });
+    await newUser.save();
+
+    res.status(200).json({
+      status: 200,
+      msg: "User created successfully",
+      data: newUser,
+    });
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error!" });
+  }
+});
+
+// User Login API
+app.post("/user-login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ msg: "Email and password are required" });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ msg: "Email address not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ msg: "Invalid credentials" });
+    }
+
+    return res.status(200).json({ msg: "Login successful", status: 200 });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Internal server error!", err: error.message });
+  }
+});
+
+// Admin Registration API
 app.post("/admin-register", async (req, res) => {
   try {
     const { name, email, password, role, phone, address } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const createAdmin = new AdminModel({
+    const newAdmin = new AdminModel({
       name,
       email,
       password: hashedPassword,
@@ -25,14 +125,39 @@ app.post("/admin-register", async (req, res) => {
       address,
     });
 
-    await createAdmin.save();
+    await newAdmin.save();
 
-    if (createAdmin) {
+    return res.status(200).json({
+      msg: "Admin created successfully",
+      status: 200,
+      data: newAdmin,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Internal server error", err: error.message });
+  }
+});
+
+// Admin Get All Users API
+app.get("/admin-get-user", async (_, res) => {
+  try {
+    const allUsers = await UserModel.find();
+
+    if (allUsers) {
+      const userData = allUsers.map((user) => ({
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }));
+
       return res.status(200).json({
-        msg: "Admin create successfully",
+        userdata: userData,
+        totalUsers: allUsers.length,
         status: 200,
-        data: createAdmin,
       });
+    } else {
+      return res.status(400).json({ msg: "No users found" });
     }
   } catch (error) {
     return res
@@ -40,174 +165,155 @@ app.post("/admin-register", async (req, res) => {
       .json({ msg: "Internal server error", err: error.message });
   }
 });
-// Api For Login Admin
+
+// Admin Login API
 app.post("/admin-login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
-      return res.status(400).json({ msg: "(All Fields Are Required" });
+      return res.status(400).json({ msg: "All fields are required" });
     }
-    const findAdmin = await AdminModel.findOne({ email });
-    if (!findAdmin) {
-      return res.status(200).json({ msg: "Invalid Credential" });
+
+    const admin = await AdminModel.findOne({ email });
+    if (!admin) {
+      return res.status(404).json({ msg: "Invalid email address" });
     }
-    const isMatch = await bcrypt.compare(password, findAdmin.password);
-    if (findAdmin && isMatch) {
-      return res
-        .status(200)
-        .json({ msg: "Login successful", status: 200, data: findAdmin });
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ msg: "Invalid credentials" });
     }
+
+    return res.status(200).json({
+      msg: "Login successful",
+      status: 200,
+      data: admin,
+    });
   } catch (error) {
     return res
       .status(500)
-      .json({ msg: "Internal Server error", err: error.message });
+      .json({ msg: "Internal server error", err: error.message });
   }
 });
-// Api for User-Login
-app.post("/user-login", async (req, res) => {
+
+// Document Upload API
+app.post("/upload-document", upload.single("file"), async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ msg: "(All Fields Are Required" });
-    }
-    const findUser = await StudentModel.findOne({ email });
-    if (!findUser) {
-      return res.status(200).json({ msg: "Invalid Credential" });
-    }
-    const isMatch = await bcrypt.compare(password, findUser.password);
-    if (findUser && isMatch) {
-      return res
-        .status(200)
-        .json({ msg: "Login successful", status: 200, data: findUser });
-    }
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal Server error", err: error.message });
-  }
-});
-// Api For User Registration
-app.post("/user-register", async (req, res) => {
-  const { email, password, name } = req.body;
+    const { title, content, uploadedBy, category, last_modified } = req.body;
 
-  try {
-    const checkEmail = await UserModel.findOne({ email });
-
-    if (checkEmail) {
-      return res.status(404).json({ msg: `${email} already exists` });
+    if (!title || !content || !uploadedBy || !category || !last_modified) {
+      return res.status(400).json({ msg: "All fields are required" });
     }
 
-    //hashing password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const existingDocument = await DocumentCategory.findOne({ title });
+    if (existingDocument) {
+      return res.status(402).json({ msg: `${title} already exists` });
+    }
 
-    //create user code
-    const createUser = new UserModel({
-      email,
-      password: hashedPassword,
-      name,
+    const newDocument = new DocumentCategory({
+      title,
+      content,
+      uploadedBy,
+      category,
+      file: req.file.filename,
+      last_modified: new Date(last_modified),
     });
 
-    await createUser.save();
+    await newDocument.save();
 
-    if (createUser) {
-      res.status(200).json({
+    return res.status(200).json({
+      status: 200,
+      msg: "Document uploaded successfully",
+      data: newDocument,
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    return res
+      .status(500)
+      .json({ msg: "Internal server error", err: error.message });
+  }
+});
+
+// Document Update API
+app.patch("/update-document/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ msg: "Document ID is required" });
+    }
+
+    const updatedDocument = await DocumentCategory.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      { new: true }
+    );
+
+    if (updatedDocument) {
+      return res.status(200).json({
+        msg: "Document updated successfully",
         status: 200,
-        msg: "user created successfully",
-        data: createUser,
+        data: updatedDocument,
       });
     } else {
-      res.status(400).json({ msg: "failed to create user" });
+      return res.status(404).json({ msg: "Document not found" });
     }
   } catch (error) {
-    res.status(500).json({ msg: "Internal server error!" });
-  }
-});
-// Get all document categories
-router.get("/document-categories", async (req, res) => {
-  try {
-    const categories = await DocumentCategory.find().populate(
-      "uploadedBy",
-      "name email"
-    );
-    res.status(200).json({ data: categories });
-  } catch (err) {
-    res.status(500).json({
-      error: "Failed to fetch document categories",
-      details: err.message,
-    });
-  }
-});
-// Get a single document category by ID
-router.get("/document-categories/:id", async (req, res) => {
-  try {
-    const category = await DocumentCategory.findById(req.params.id).populate(
-      "uploadedBy",
-      "name email"
-    );
-    if (!category) {
-      return res.status(404).json({ error: "Document category not found" });
-    }
-    res.status(200).json({ data: category });
-  } catch (err) {
-    res.status(500).json({
-      error: "Failed to fetch document category",
-      details: err.message,
-    });
-  }
-});
-// Update a document category by ID
-router.put("/document-categories/:id", async (req, res) => {
-  const { title, description } = req.body;
-
-  try {
-    const updatedCategory = await DocumentCategory.findByIdAndUpdate(
-      req.params.id,
-      { title, description },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedCategory) {
-      return res.status(404).json({ error: "Document category not found" });
-    }
-
-    res
-      .status(200)
-      .json({
-        message: "Document category updated successfully",
-        data: updatedCategory,
-      });
-  } catch (err) {
-    res
+    return res
       .status(500)
-      .json({
-        error: "Failed to update document category",
-        details: err.message,
-      });
+      .json({ msg: "Internal server error", err: error.message });
   }
 });
-// Delete a document category by ID
-router.delete("/document-categories/:id", async (req, res) => {
-  try {
-    const deletedCategory = await DocumentCategory.findByIdAndDelete(
-      req.params.id
-    );
 
-    if (!deletedCategory) {
-      return res.status(404).json({ error: "Document category not found" });
+// Document Deletion API
+app.delete("/delete-document/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ msg: "Document ID is required" });
     }
 
-    res.status(200).json({ message: "Document category deleted successfully" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({
-        error: "Failed to delete document category",
-        details: err.message,
+    const deletedDocument = await DocumentCategory.findByIdAndDelete(id);
+    if (deletedDocument) {
+      return res.status(200).json({
+        msg: "Document deleted successfully",
+        data: deletedDocument.title,
       });
+    } else {
+      return res.status(404).json({ msg: "Document not found" });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Internal server error", err: error.message });
   }
 });
 
-//connection function call
+// Get All Documents API
+app.get("/get-all-documents", async (req, res) => {
+  try {
+    const documents = await DocumentCategory.find();
+
+    if (documents) {
+      return res.status(200).json({
+        msg: "Documents retrieved successfully",
+        status: 200,
+        allDocumentsData: documents,
+      });
+    } else {
+      return res.status(400).json({ msg: "No documents found" });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Internal server error", err: error.message });
+  }
+});
+
+// Connect to Database
 connectDB();
 
-app.listen(3000, () => console.log("server is running on port 3000"));
+// Start the Server
+app.listen(3000, () => console.log("Server is running on port 3000"));
