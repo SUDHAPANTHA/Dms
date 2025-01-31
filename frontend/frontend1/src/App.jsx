@@ -11,6 +11,8 @@ import NavBar from "./components/NavBar";
 import UserSideBar from "./UserPages/UserSideBar";
 import UserRegisterPage from "./UserPages/UserRegisterPage";
 import DocumentUploadPage from "./UserPages/DocumentUploadPage";
+import DisplayAllDocument from "./pages/DisplayAllDocument";
+import DocumentUpdatePopup from "./components/DocumentUpdatePopup";
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
         <Route path="/user-login" element={<UserLogin />} />
         <Route path="/user-register" element={<UserRegisterPage />} />
         <Route path="/upload-doc" element={<DocumentUploadPage />} />
+        <Route path="/displayalldocs" element={<DisplayAllDocument />} />
+        <Route path="/popup" element={<DocumentUpdatePopup />} />
       </Routes>
     </>
   );
