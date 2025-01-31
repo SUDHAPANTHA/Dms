@@ -10,6 +10,7 @@ import UserLogin from "./UserPages/UserLogin";
 import NavBar from "./components/NavBar";
 import UserSideBar from "./UserPages/UserSideBar";
 import UserRegisterPage from "./UserPages/UserRegisterPage";
+import DocumentUploadPage from "./UserPages/DocumentUploadPage";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/user-dashboard" element={<UserDashBoard />} />
         <Route path="/user-login" element={<UserLogin />} />
         <Route path="/user-register" element={<UserRegisterPage />} />
+        <Route path="/upload-doc" element={<DocumentUploadPage />} />
       </Routes>
     </>
   );

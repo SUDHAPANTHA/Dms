@@ -34,12 +34,12 @@ function UserSideBar() {
           </Link>
 
           <Link
-            to="/displayallbooks"
+            to="/upload-doc"
             className="bg-white rounded-xl font-bold flex p-4"
           >
             <FaFolder size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              Document Category
+              Upload Document
             </span>
           </Link>
 
