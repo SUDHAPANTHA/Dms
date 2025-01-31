@@ -34,7 +34,7 @@ function SideBar() {
           </Link>
 
           <Link
-            to="/displayalldoc"
+            to="/displayalldocs"
             className="bg-white rounded-xl font-bold flex p-4"
           >
             <FaFolder size={20} />{" "}
