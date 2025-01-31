@@ -40,7 +40,6 @@ function DocumentUploadPage() {
 
     try {
       const result = await fetch("/proxy/upload-document/", {
-        headers: { "Content-type": "application/json" },
         method: "POST",
         body: formData,
       });
@@ -88,7 +87,6 @@ function DocumentUploadPage() {
           value={uploadedBy}
         />
 
-        {/* Category Select Dropdown */}
         <select
           className="border rounded-lg p-3 w-full mb-2"
           onChange={(e) => setCategory(e.target.value)}
@@ -117,7 +115,7 @@ function DocumentUploadPage() {
 
         <button
           type="submit"
-          className="border rounded-lg bg-customOrange text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
+          className="border rounded-lg bg-orange-500 text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
         >
           <FaUpload className="mr-2" /> Upload
         </button>
