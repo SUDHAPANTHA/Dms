@@ -8,18 +8,16 @@ function DisplayAllDocument() {
 
   const [updateDocumentData, setUpdateDocumentData] = useState({
     title: "",
-    uploadedBy: "",
     lastModified: "",
     id: "",
   });
 
-  function handlePopup(title, uploadedBy, lastModified, id) {
+  function handlePopup(title, lastModified, id) {
     setIsPopupOpen(!isPopupOpen);
 
     setUpdateDocumentData((prev) => ({
       ...prev,
       title,
-      uploadedBy,
       lastModified,
       id,
     }));
@@ -86,7 +84,6 @@ function DisplayAllDocument() {
           <thead className="bg-blue-500">
             <tr>
               <th className="p-2 text-center">Title</th>
-              <th className="p-2 text-center">Uploaded By</th>
               <th className="p-2 text-center">Category</th>
               <th className="p-2 text-center">Last Modified</th>
               <th className="p-2 text-center">Action</th>
@@ -97,10 +94,11 @@ function DisplayAllDocument() {
             {documentData.map((doc) => (
               <tr key={doc._id} className="bg-white even:bg-gray-200">
                 <td className="p-4 text-center">{doc.title}</td>
-                <td className="p-4 text-center">{doc.uploadedBy}</td>
                 <td className="p-4 text-center">{doc.category}</td>
                 <td className="p-4 text-center">
-                  {new Date(doc.lastModified).toLocaleDateString()}
+                  {doc.lastModified
+                    ? new Date(doc.lastModified).toLocaleString()
+                    : "N/A"}
                 </td>
                 <td className="flex justify-center items-center gap-4 p-9">
                   <button
@@ -111,12 +109,7 @@ function DisplayAllDocument() {
                   </button>
                   <button
                     onClick={() =>
-                      handlePopup(
-                        doc.title,
-                        doc.uploadedBy,
-                        doc.lastModified,
-                        doc._id
-                      )
+                      handlePopup(doc.title, doc.lastModified, doc._id)
                     }
                     className="bg-lime-500 text-white py-2 my-2 px-4 rounded-lg"
                   >

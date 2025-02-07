@@ -24,12 +24,12 @@ function UserSideBar() {
             </span>
           </li>
           <Link
-            to="/display-user"
+            to="/displayalldocs"
             className="bg-white rounded-xl font-bold flex p-4"
           >
             <FaCalendar size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              Year Listing
+              All Documents
             </span>
           </Link>
 
