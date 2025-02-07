@@ -5,7 +5,6 @@ import DocumentUpdatePopup from "../components/DocumentUpdatePopup";
 function DisplayAllDocument() {
   const [documentData, setDocumentData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
   const [updateDocumentData, setUpdateDocumentData] = useState({
     title: "",
     lastModified: "",
@@ -14,7 +13,6 @@ function DisplayAllDocument() {
 
   function handlePopup(title, lastModified, id) {
     setIsPopupOpen(!isPopupOpen);
-
     setUpdateDocumentData((prev) => ({
       ...prev,
       title,
@@ -32,13 +30,16 @@ function DisplayAllDocument() {
 
       const data = await result.json();
 
-      if (data) {
+      if (data && Array.isArray(data.allDocumentsData)) {
         console.log(data);
         setDocumentData(data.allDocumentsData);
+      } else {
+        setDocumentData([]);
       }
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong");
+      setDocumentData([]); // Ensure empty array if error occurs
     }
   }
 
@@ -86,45 +87,89 @@ function DisplayAllDocument() {
               <th className="p-2 text-center">Title</th>
               <th className="p-2 text-center">Category</th>
               <th className="p-2 text-center">Last Modified</th>
+              <th className="p-2 text-center">File</th>
               <th className="p-2 text-center">Action</th>
             </tr>
           </thead>
 
           <tbody className="text-black">
-            {documentData.map((doc) => (
-              <tr key={doc._id} className="bg-white even:bg-gray-200">
-                <td className="p-4 text-center">{doc.title}</td>
-                <td className="p-4 text-center">{doc.category}</td>
-                <td className="p-4 text-center">
-                  {doc.lastModified
-                    ? new Date(doc.lastModified).toLocaleString()
-                    : "N/A"}
-                </td>
-                <td className="flex justify-center items-center gap-4 p-9">
-                  <button
-                    onClick={() => deleteDocument(doc._id)}
-                    className="bg-red-500 text-white py-2 px-4 rounded-lg"
-                  >
-                    Delete
-                  </button>
-                  <button
-                    onClick={() =>
-                      handlePopup(doc.title, doc.lastModified, doc._id)
-                    }
-                    className="bg-lime-500 text-white py-2 my-2 px-4 rounded-lg"
-                  >
-                    Update
-                  </button>
-                  {isPopupOpen && (
-                    <DocumentUpdatePopup
-                      close={handlePopup}
-                      updateDocumentData={updateDocumentData}
-                      setUpdateDocumentData={setUpdateDocumentData}
-                    />
-                  )}
+            {documentData?.length > 0 ? (
+              documentData.map((doc) => (
+                <tr key={doc._id} className="bg-white even:bg-gray-200">
+                  <td className="p-4 text-center">{doc.title}</td>
+                  <td className="p-4 text-center">{doc.category || "N/A"}</td>
+                  <td className="p-4 text-center">
+                    {doc.lastModified
+                      ? new Date(doc.lastModified).toLocaleString()
+                      : "N/A"}
+                  </td>
+
+                  <td className="p-4 text-center">
+                    {/* Display file if available */}
+                    {doc.fileUrl ? (
+                      doc.fileUrl.endsWith(".pdf") ? (
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500"
+                        >
+                          View PDF
+                        </a>
+                      ) : doc.fileUrl.endsWith(".jpg") ||
+                        doc.fileUrl.endsWith(".png") ? (
+                        <img
+                          src={doc.fileUrl}
+                          alt={doc.title}
+                          className="w-20 h-20 object-cover rounded-md"
+                        />
+                      ) : (
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500"
+                        >
+                          View File
+                        </a>
+                      )
+                    ) : (
+                      "No file available"
+                    )}
+                  </td>
+
+                  <td className="flex justify-center items-center gap-4 p-9">
+                    <button
+                      onClick={() => deleteDocument(doc._id)}
+                      className="bg-red-500 text-white py-2 px-4 rounded-lg"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() =>
+                        handlePopup(doc.title, doc.lastModified, doc._id)
+                      }
+                      className="bg-lime-500 text-white py-2 my-2 px-4 rounded-lg"
+                    >
+                      Update
+                    </button>
+                    {isPopupOpen && (
+                      <DocumentUpdatePopup
+                        close={handlePopup}
+                        updateDocumentData={updateDocumentData}
+                        setUpdateDocumentData={setUpdateDocumentData}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center p-4 text-gray-500">
+                  No documents available.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
