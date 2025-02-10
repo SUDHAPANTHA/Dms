@@ -1,8 +1,8 @@
-import express from "express"; // this is for ES6 import
+import express from "express"; // ES6 import syntax
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import path from "path";
-import fs from "fs"; // Import fs module
+import fs from "fs";
 import multer from "multer";
 
 // Import database connection and models
@@ -15,16 +15,15 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-// app.use(express.static("public"));
 app.use(cors());
 
 // Multer configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Define your upload directory
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Store file with a unique name
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
@@ -36,83 +35,65 @@ const fileFilter = (req, file, cb) => {
   const mimetype = allowedFileTypes.test(file.mimetype);
 
   if (extname && mimetype) {
-    return cb(null, true); // File type is allowed
+    return cb(null, true);
   } else {
-    cb(new Error("File type is not supported"), false); // Reject file
+    cb(new Error("File type is not supported"), false);
   }
 };
 
 const upload = multer({ storage, fileFilter });
 
-
-// API to register the user
+// User Registration API
 app.post("/user-register", async (req, res) => {
   const { email, password, name } = req.body;
 
   try {
-    const checkEmail = await StudentModel.findOne({ email });
-
+    const checkEmail = await UserModel.findOne({ email });
     if (checkEmail) {
       return res.status(404).json({ msg: `${email} already exists` });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    const createUser = new UserModel({
-      email,
-      password: hashedPassword,
-      name,
-    });
+    const createUser = new UserModel({ email, password: hashedPassword, name });
 
     await createUser.save();
-
-    res.status(200).json({
-      status: 200,
-      msg: "User created successfully",
-      data: createUser,
-    });
+    res
+      .status(200)
+      .json({ msg: "User created successfully", data: createUser });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error!" });
   }
 });
 
-// API for user login
+// User Login API
 app.post("/user-login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ msg: "Password and email both are required" });
+      return res.status(400).json({ msg: "Both fields are required" });
     }
 
     const validateUser = await UserModel.findOne({ email });
     if (!validateUser) {
-      return res.status(400).json({ msg: "Email address does not exist" });
+      return res.status(400).json({ msg: "Email not found" });
     }
 
     const isMatch = await bcrypt.compare(password, validateUser.password);
-
     if (!isMatch) {
       return res.status(401).json({ msg: "Invalid credentials" });
     }
 
-    return res.status(200).json({ msg: "Login successful", status: 200 });
+    return res.status(200).json({ status: 200, msg: "Login successful" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error!", err: error.message });
+    return res.status(500).json({ msg: "Internal server error!" });
   }
 });
 
-// API for Admin register
+// Admin Registration API
 app.post("/admin-register", async (req, res) => {
   try {
     const { name, email, password, role, phone, address } = req.body;
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const createAdmin = new AdminModel({
       name,
       email,
@@ -121,99 +102,22 @@ app.post("/admin-register", async (req, res) => {
       phone,
       address,
     });
-
     await createAdmin.save();
-
-    return res.status(200).json({
-      msg: "Admin created successfully",
-      status: 200,
-      data: createAdmin,
-    });
+    return res.status(200).json({ msg: "Admin created successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-// API for admin to get all student details
-app.get("/admin-get-user", async (_, res) => {
-  try {
-    const findAllUser = await UserModel.find();
-
-    if (findAllUser) {
-      const totalUser = findAllUser.length;
-
-      const data = findAllUser.map((std) => {
-        return {
-          id: std._id,
-          name: std.name,
-          email: std.email,
-        };
-      });
-
-      return res.status(200).json({
-        userdata: data,
-        totalUser: totalUser,
-        status: 200,
-      });
-    } else {
-      return res.status(400).json({ msg: "No student found" });
-    }
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
-  }
-});
-
-// API for admin login
-app.post("/admin-login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ msg: "All fields are required" });
-    }
-
-    const findAdmin = await AdminModel.findOne({ email });
-
-    if (!findAdmin) {
-      return res.status(200).json({ msg: "Invalid Email address" });
-    }
-
-    const isMatch = await bcrypt.compare(password, findAdmin.password);
-
-    if (!isMatch) {
-      return res.status(200).json({ msg: "Invalid Credentials" });
-    }
-
-    return res.status(200).json({
-      msg: "Login successful",
-      status: 200,
-      data: findAdmin,
-    });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
-  }
-});
-
-// API to upload document
+// Upload Document API
 app.post("/upload-document", upload.single("file"), async (req, res) => {
   try {
-    // console.log("Request Body:", req.body);
-    // console.log("Uploaded File:", req.file);
-
     const { title, description, uploadedBy, category, last_modified } =
       req.body;
-
     if (!title || !description || !uploadedBy || !category || !last_modified) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
-    // Validation for duplicate titles
     const checkIfDocumentExists = await DocumentCategory.findOne({ title });
     if (checkIfDocumentExists) {
       return res.status(402).json({ msg: `${title} already exists` });
@@ -229,25 +133,16 @@ app.post("/upload-document", upload.single("file"), async (req, res) => {
     });
 
     await createDocument.save();
-
-    return res.status(200).json({
-      status: 200,
-      msg: "Document uploaded successfully",
-      data: createDocument,
-    });
+    return res.status(200).json({ msg: "Document uploaded successfully" });
   } catch (error) {
-    console.error("Error:", error.message);
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-// API to update a document category
+// Update Document API
 app.patch("/update-document/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!id) {
       return res.status(400).json({ msg: "Document ID is required" });
     }
@@ -257,72 +152,56 @@ app.patch("/update-document/:id", async (req, res) => {
       { $set: req.body },
       { new: true }
     );
-
     if (updatedDocument) {
-      return res.status(200).json({
-        msg: "Document updated successfully",
-        status: 200,
-        data: updatedDocument,
-      });
+      return res
+        .status(200)
+        .json({ msg: "Document updated successfully", data: updatedDocument });
     } else {
       return res.status(400).json({ msg: "Document not found" });
     }
   } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-// API to delete a document category
+// Delete Document API
 app.delete("/delete-document/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!id) {
       return res.status(400).json({ msg: "Document ID is required" });
     }
 
     const deleteDocument = await DocumentCategory.findByIdAndDelete(id);
-
     if (deleteDocument) {
-      return res.status(200).json({
-        msg: "Document deleted successfully",
-        data: deleteDocument.title,
-      });
+      return res.status(200).json({ msg: "Document deleted successfully" });
     } else {
       return res.status(404).json({ msg: "Document not found" });
     }
   } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-// API to get all document categories
+// Get All Documents API
 app.get("/get-all-documents", async (req, res) => {
   try {
     const findAllDocuments = await DocumentCategory.find();
-
     if (findAllDocuments) {
       return res.status(200).json({
         msg: "Documents retrieved successfully",
-        status: 200,
         allDocumentsData: findAllDocuments,
       });
     } else {
       return res.status(400).json({ msg: "No documents found" });
     }
   } catch (error) {
-    return res
-      .status(500)
-      .json({ msg: "Internal server error", err: error.message });
+    return res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-// Connection to database
+// Connect to database
 connectDB();
 
-// Start the server
-app.listen(3000, () => console.log("Server is running on port 3000"));
+// Start server
+app.listen(3000, () => console.log("Server running on port 3000"));
