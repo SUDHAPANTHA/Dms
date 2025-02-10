@@ -2,25 +2,24 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FaUpload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Navbar from "./Navbar";
-import UserSideBar from "./UserSideBar";
 
 function DocumentUploadPage() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
   const [uploadedBy, setUploadedBy] = useState("");
+  const [category, setCategory] = useState("");
+  const [lastModified, setLastModified] = useState("");
   const navigate = useNavigate();
 
+  // Fetch logged-in user from localStorage
   useEffect(() => {
     const userData = localStorage.getItem("userData");
     if (!userData) {
-      navigate("/");
+      navigate("/"); // Redirect to login if no user data
       return;
     }
     const { name } = JSON.parse(userData);
-    console.log("User name from localStorage:", name); // Debug log
     setUploadedBy(name);
   }, [navigate]);
 
@@ -38,7 +37,7 @@ function DocumentUploadPage() {
 
   async function handleUpload(e) {
     e.preventDefault();
-    if (!file || !title || !description || !category) {
+    if (!file || !title || !description || !category || !lastModified) {
       toast.error("All fields are required!");
       return;
     }
@@ -49,13 +48,7 @@ function DocumentUploadPage() {
     formData.append("description", description);
     formData.append("uploadedBy", uploadedBy);
     formData.append("category", category);
-    formData.append("last_modified", new Date().toISOString());
-
-    // Debug log
-    console.log("Form Data:");
-    formData.forEach((value, key) => {
-      console.log(key, value);
-    });
+    formData.append("last_modified", lastModified);
 
     try {
       const response = await fetch("/proxy/upload-document", {
@@ -64,110 +57,82 @@ function DocumentUploadPage() {
       });
 
       const data = await response.json();
-
       if (response.ok) {
-        toast.success("Document uploaded successfully");
-        setTitle("");
-        setDescription("");
-        setCategory("");
-        setFile(null);
-        navigate("/displayalldocs");
+        toast.success("Document uploaded successfully!");
+        navigate("/user-dashboard");
       } else {
-        toast.error(data.msg || "Upload failed");
+        toast.error(data.msg || "Upload failed!");
       }
     } catch (error) {
-      console.error("Upload error:", error);
-      toast.error("Something went wrong");
+      console.error("Upload error:", error.message);
+      toast.error("Something went wrong!");
     }
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="flex">
-        <UserSideBar />
-        <div className="flex-1 p-8">
-          <form onSubmit={handleUpload} className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6">Upload Document</h2>
+    <div className="flex h-screen justify-center items-center px-8 py-20 bg-gradient-to-r from-white via-orange-200 to-white">
+      <form
+        onSubmit={handleUpload}
+        className="bg-orange-50 p-10 border rounded-lg max-w-md w-full shadow-lg mx-auto"
+      >
+        <h2 className="font-bold text-2xl text-center mb-4">Upload Document</h2>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Title
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              />
-            </div>
+        <input
+          className="border rounded-lg p-3 w-full mb-2"
+          type="text"
+          placeholder="Title"
+          onChange={(e) => setTitle(e.target.value)}
+          value={title}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              />
-            </div>
+        <textarea
+          className="border rounded-lg p-3 w-full mb-2"
+          placeholder="Description"
+          onChange={(e) => setDescription(e.target.value)}
+          value={description}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              >
-                <option value="">Select Category</option>
-                <option value="Personal">Personal</option>
-                <option value="Financial">Financial</option>
-                <option value="Education">Education</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
+        <input
+          className="border rounded-lg p-3 w-full mb-2 bg-gray-100"
+          type="text"
+          value={uploadedBy}
+          disabled
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Uploaded By
-              </label>
-              <input
-                type="text"
-                value={uploadedBy}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 p-2"
-                disabled
-              />
-            </div>
+        <select
+          className="border rounded-lg p-3 w-full mb-2"
+          onChange={(e) => setCategory(e.target.value)}
+          value={category}
+        >
+          <option value="">Select Category</option>
+          <option value="Personal">Personal</option>
+          <option value="Education">Education</option>
+          <option value="Financial">Financial</option>
+          <option value="Others">Others</option>
+        </select>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                File
-              </label>
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="mt-1 block w-full"
-                accept=".pdf,.jpg,.jpeg,.png"
-                required
-              />
-            </div>
+        <input
+          className="border rounded-lg p-3 w-full mb-2"
+          type="date"
+          onChange={(e) => setLastModified(e.target.value)}
+          value={lastModified}
+        />
 
-            <button
-              type="submit"
-              className="w-full bg-customOrange text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <FaUpload /> Upload Document
-            </button>
-          </form>
-        </div>
-      </div>
-    </>
+        <input
+          className="border rounded-lg p-3 w-full mb-2"
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
+          onChange={handleFileChange}
+        />
+
+        <button
+          type="submit"
+          className="border rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
+        >
+          <FaUpload className="mr-2" /> Upload
+        </button>
+      </form>
+    </div>
   );
 }
 
