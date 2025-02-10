@@ -1,10 +1,15 @@
 import mongoose from "mongoose";
+
 const DocumentSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
   },
   description: {
+    type: String,
+    required: true,
+  },
+  uploadedBy: {
     type: String,
     required: true,
   },
@@ -24,5 +29,4 @@ const DocumentSchema = new mongoose.Schema({
 });
 
 const DocumentCategory = mongoose.model("Document", DocumentSchema);
-
 export default DocumentCategory;
