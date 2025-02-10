@@ -3,25 +3,28 @@ import { useNavigate } from "react-router-dom";
 
 function NavBar() {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user") || "{}"); // Default to empty object
+
+  // Safely retrieve user data
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
   // Logout function
   const handleLogout = () => {
     localStorage.removeItem("user"); // Remove user data
-    window.location.reload(); // Reload page to update UI
     navigate("/login"); // Redirect to login page
+    window.location.reload(); // Reload page to update UI
   };
 
   return (
     <nav className="flex justify-between items-center px-8 py-4 bg-gradient-to-r from-white via-orange-200 to-white shadow-md">
       {/* Left Side: Show "Welcome [User's Name]" after login */}
       <div className="text-xl font-bold mx-10">
-        {user.name ? `Welcome, ${user.name}` : "Logo"}
+        {user && user.name ? `Welcome, ${user.name}` : "Logo"}
       </div>
 
       {/* Right Side: Show either menu or just logout */}
       <div className="space-x-6">
-        {!user.name ? (
+        {!user ? (
           <>
             <a href="#about" className="text-gray-600">
               About
