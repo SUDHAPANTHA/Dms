@@ -2,16 +2,24 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { FaUpload } from "react-icons/fa";
 
-function UploadDocumentPage() {
+function DocumentUploadPage() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [uploadedBy, setUploadedBy] = useState("");
+  const [uploadedBy, setUploadedBy] = useState(""); // Editable field
   const [category, setCategory] = useState("");
   const [lastModified, setLastModified] = useState("");
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+      if (!allowedTypes.includes(selectedFile.type)) {
+        toast.error("Only PDF, JPG, and PNG files are allowed!");
+        return;
+      }
+      setFile(selectedFile);
+    }
   };
 
   async function handleUpload(e) {
@@ -37,7 +45,7 @@ function UploadDocumentPage() {
     formData.append("last_modified", lastModified);
 
     try {
-      const response = await fetch("/upload-document", {
+      const response = await fetch("/proxy/upload-document", {
         method: "POST",
         body: formData,
       });
@@ -85,13 +93,25 @@ function UploadDocumentPage() {
           value={uploadedBy}
         />
 
-        <input
+        <select
           className="border rounded-lg p-3 w-full mb-2"
-          type="text"
-          placeholder="Category"
           onChange={(e) => setCategory(e.target.value)}
           value={category}
-        />
+        >
+          <option value="">Select Category</option>
+          <option value="Personal" name="Personal">
+            Personal
+          </option>
+          <option value="Education" name="Education">
+            Education
+          </option>
+          <option value="Financial" name="Financial">
+            Financial
+          </option>
+          <option value="Others" name="Others">
+            Others
+          </option>
+        </select>
 
         <input
           className="border rounded-lg p-3 w-full mb-2"
@@ -103,12 +123,13 @@ function UploadDocumentPage() {
         <input
           className="border rounded-lg p-3 w-full mb-2"
           type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
           onChange={handleFileChange}
         />
 
         <button
           type="submit"
-          className="border rounded-lg bg-customOrange text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
+          className="border rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
         >
           <FaUpload className="mr-2" /> Upload
         </button>
@@ -117,4 +138,4 @@ function UploadDocumentPage() {
   );
 }
 
-export default UploadDocumentPage;
+export default DocumentUploadPage;

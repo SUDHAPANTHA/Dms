@@ -10,7 +10,7 @@ const DocumentSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["personal", "financial", "education"],
+    enum: ["Personal", "Financial", "Education", "Others"],
     required: true,
   },
   last_modified: {
