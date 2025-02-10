@@ -4,9 +4,15 @@ import { useNavigate } from "react-router-dom";
 function NavBar() {
   const navigate = useNavigate();
 
-  // Safely retrieve user data
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  // Safely retrieve user data from localStorage
+  let user = null;
+  try {
+    const storedUser = localStorage.getItem("user");
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    user = null; // Fallback to null
+  }
 
   // Logout function
   const handleLogout = () => {
