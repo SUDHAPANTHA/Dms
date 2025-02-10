@@ -1,44 +1,71 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-function Navbar() {
-  const [userName, setUserName] = useState("");
+function NavBar() {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const userData = localStorage.getItem("userData");
-    if (userData) {
-      const { name } = JSON.parse(userData);
-      setUserName(name);
-    }
-  }, []);
+  // Safely retrieve user data from localStorage
+  let user = null;
+  try {
+    const storedUser = localStorage.getItem("user");
 
+    // Check if the storedUser is not undefined or the string 'undefined'
+    if (storedUser && storedUser !== "undefined") {
+      user = JSON.parse(storedUser);
+    }
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    user = null; // Fallback to null
+  }
+
+  // Logout function
   const handleLogout = () => {
-    localStorage.removeItem("userData");
-    navigate("/");
+    localStorage.removeItem("user"); // Remove user data
+    navigate("/login"); // Redirect to login page
+    window.location.reload(); // Reload page to update UI
   };
 
   return (
-    <nav className="bg-orange-50 shadow-lg">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <span className="text-gray-800 text-lg">
-              Welcome, <span className="font-semibold">{userName}</span>
-            </span>
-          </div>
-          <div>
+    <nav className="flex justify-between items-center px-8 py-4 bg-gradient-to-r from-white via-orange-200 to-white shadow-md">
+      {/* Left Side: Show "Welcome [User's Name]" after login */}
+      <div className="text-xl font-bold mx-10">
+        {user && user.name ? `Welcome, ${user.name}` : "Logo"}
+      </div>
+
+      {/* Right Side: Show either menu or just logout */}
+      <div className="space-x-6">
+        {!user ? (
+          <>
+            <a href="#about" className="text-gray-600">
+              About
+            </a>
+            <a href="#features" className="text-gray-600">
+              Features
+            </a>
+            <a href="#contact" className="text-gray-600">
+              Contact
+            </a>
+            <a href="/user-register" className="text-gray-600">
+              Register
+            </a>
             <button
-              onClick={handleLogout}
-              className="bg-customOrange hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors"
+              onClick={() => navigate("/login")}
+              className="px-4 py-2 bg-orange-500 text-white rounded-md"
             >
-              Logout
+              Login
             </button>
-          </div>
-        </div>
+          </>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-md"
+          >
+            Logout
+          </button>
+        )}
       </div>
     </nav>
   );
 }
 
-export default Navbar;
+export default NavBar;

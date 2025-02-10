@@ -13,6 +13,7 @@ import UserRegisterPage from "./UserPages/UserRegisterPage";
 import DocumentUploadPage from "./UserPages/DocumentUploadPage";
 import DisplayAllDocument from "./pages/DisplayAllDocument";
 import DocumentUpdatePopup from "./components/DocumentUpdatePopup";
+import Navbar from "./UserPages/Navbar";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route path="/upload-doc" element={<DocumentUploadPage />} />
         <Route path="/displayalldocs" element={<DisplayAllDocument />} />
         <Route path="/popup" element={<DocumentUpdatePopup />} />
+        <Route path="/nav" element={<Navbar />} />
       </Routes>
     </>
   );
