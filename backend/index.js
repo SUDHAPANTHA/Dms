@@ -82,8 +82,14 @@ app.post("/user-login", async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ msg: "Invalid credentials" });
     }
-
-    return res.status(200).json({ status: 200, msg: "Login successful" });
+    return res.status(200).json({
+      status: 200,
+      msg: "Login successful",
+      user: {
+        name: validateUser.name,
+        email: validateUser.email,
+      },
+    });
   } catch (error) {
     return res.status(500).json({ msg: "Internal server error!" });
   }
