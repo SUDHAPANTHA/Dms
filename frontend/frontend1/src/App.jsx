@@ -18,10 +18,10 @@ import Navbar from "./UserPages/Navbar";
 function App() {
   return (
     <>
-      <NavBar />
       <ToastContainer />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/all-nav" element={<NavBar />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sidebar" element={<SideBar />} />
         <Route path="/user-sidebar" element={<UserSideBar />} />
