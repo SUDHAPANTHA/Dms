@@ -21,16 +21,19 @@ function Navbar() {
   return (
     <nav className="bg-orange-50 shadow-lg">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+        <div className="flex justify-between items-center h-16 w-full">
+          {/* Left Side */}
+          <div className="flex-grow">
             <span className="text-gray-800 text-lg">
               Welcome, <span className="font-semibold">{userName}</span>
             </span>
           </div>
+
+          {/* Right Side */}
           <div>
             <button
               onClick={handleLogout}
-              className="bg-customOrange hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md transition-colors"
             >
               Logout
             </button>
