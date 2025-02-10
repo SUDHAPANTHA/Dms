@@ -1,14 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FaUpload } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function DocumentUploadPage() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [uploadedBy, setUploadedBy] = useState(""); // Editable field
+  const [uploadedBy, setUploadedBy] = useState("");
   const [category, setCategory] = useState("");
   const [lastModified, setLastModified] = useState("");
+  const navigate = useNavigate();
+
+  // Fetch logged-in user from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("userData");
+    if (!userData) {
+      navigate("/"); // Redirect to login if no user data
+      return;
+    }
+    const { name } = JSON.parse(userData);
+    setUploadedBy(name);
+  }, [navigate]);
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -24,14 +37,7 @@ function DocumentUploadPage() {
 
   async function handleUpload(e) {
     e.preventDefault();
-    if (
-      !file ||
-      !title ||
-      !description ||
-      !uploadedBy ||
-      !category ||
-      !lastModified
-    ) {
+    if (!file || !title || !description || !category || !lastModified) {
       toast.error("All fields are required!");
       return;
     }
@@ -51,8 +57,9 @@ function DocumentUploadPage() {
       });
 
       const data = await response.json();
-      if (data.status === 200) {
+      if (response.ok) {
         toast.success("Document uploaded successfully!");
+        navigate("/user-dashboard");
       } else {
         toast.error(data.msg || "Upload failed!");
       }
@@ -86,11 +93,10 @@ function DocumentUploadPage() {
         />
 
         <input
-          className="border rounded-lg p-3 w-full mb-2"
+          className="border rounded-lg p-3 w-full mb-2 bg-gray-100"
           type="text"
-          placeholder="Uploaded By"
-          onChange={(e) => setUploadedBy(e.target.value)}
           value={uploadedBy}
+          disabled
         />
 
         <select
@@ -99,18 +105,10 @@ function DocumentUploadPage() {
           value={category}
         >
           <option value="">Select Category</option>
-          <option value="Personal" name="Personal">
-            Personal
-          </option>
-          <option value="Education" name="Education">
-            Education
-          </option>
-          <option value="Financial" name="Financial">
-            Financial
-          </option>
-          <option value="Others" name="Others">
-            Others
-          </option>
+          <option value="Personal">Personal</option>
+          <option value="Education">Education</option>
+          <option value="Financial">Financial</option>
+          <option value="Others">Others</option>
         </select>
 
         <input
