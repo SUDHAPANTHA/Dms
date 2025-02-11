@@ -17,12 +17,15 @@ function UserSideBar() {
       <nav className="w-64 bg-gradient-to-r from-white via-orange-50 to-white h-screen py-4 px-4">
         <ul className="space-y-4">
           <p className="p-4 text-xl font-bold bg"> User Panel</p>
-          <li className="bg-white rounded-xl font-bold flex p-4 mt-24">
+          <Link
+            to="/dashboard"
+            className="bg-white rounded-xl font-bold flex p-4"
+          >
             <FaHome size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              DashBoard
+              All Documents
             </span>
-          </li>
+          </Link>
           <Link
             to="/displayalldocs"
             className="bg-white rounded-xl font-bold flex p-4"
