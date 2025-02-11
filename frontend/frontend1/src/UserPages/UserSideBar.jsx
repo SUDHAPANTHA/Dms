@@ -18,7 +18,7 @@ function UserSideBar() {
         <ul className="space-y-4">
           <p className="p-4 text-xl font-bold bg"> User Panel</p>
           <Link
-            to="/dashboard"
+            to="/user-dashboard"
             className="bg-white rounded-xl font-bold flex p-4"
           >
             <FaHome size={20} />{" "}
