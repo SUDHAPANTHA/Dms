@@ -4,6 +4,12 @@ import cors from "cors";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import database connection and models
 import connectDB from "./dbconfig/conn.js";
@@ -12,36 +18,67 @@ import UserModel from "./models/user-model.js";
 import DocumentCategory from "./models/document-model.js";
 
 const app = express();
+dotenv.config();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 
-// Multer configuration for file upload
+// Serve static files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// Document Schema
+// const DocumentSchema = new mongoose.Schema({
+//   title: {
+//     type: String,
+//     required: true,
+//   },
+//   description: {
+//     type: String,
+//     required: true,
+//   },
+//   uploadedBy: {
+//     type: String,
+//     required: true,
+//   },
+//   category: {
+//     type: String,
+//     enum: ["Personal", "Financial", "Education", "Others"],
+//     required: true,
+//   },
+//   file: {
+//     type: String,
+//     required: true,
+//   },
+//   last_modified: {
+//     type: Date,
+//     default: Date.now,
+//   },
+// });
+
+// const DocumentCategory = mongoose.model("Document", DocumentSchema);
+
+// Multer configuration
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/");
+    cb(null, path.join(__dirname, "uploads/"));
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + getFileExtension(file.originalname));
+    cb(
+      null,
+      file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname)
+    );
   },
 });
 
-function getFileExtension(filename) {
-  return "." + filename.split(".").pop();
-}
-
-// File filter function
 const fileFilter = (req, file, cb) => {
-  // Allowed file types
   const allowedTypes = [
     "image/jpeg",
-    "image/jpg",
     "image/png",
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/msword"
+    "application/msword",
   ];
 
   if (allowedTypes.includes(file.mimetype)) {
@@ -55,9 +92,15 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  }
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
 });
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
 
 // User Registration API
 app.post("/user-register", async (req, res) => {
@@ -134,9 +177,9 @@ app.post("/admin-register", async (req, res) => {
 // Upload Document API
 app.post("/upload-document", upload.single("file"), async (req, res) => {
   try {
-    const { title, description, uploadedBy, category, last_modified } =
-      req.body;
-    if (!title || !description || !uploadedBy || !category || !last_modified) {
+    const { title, description, uploadedBy, category } = req.body;
+
+    if (!title || !description || !uploadedBy || !category || !req.file) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
@@ -151,12 +194,13 @@ app.post("/upload-document", upload.single("file"), async (req, res) => {
       uploadedBy,
       category,
       file: req.file.filename,
-      last_modified: new Date(last_modified),
+      last_modified: new Date(),
     });
 
     await createDocument.save();
     return res.status(200).json({ msg: "Document uploaded successfully" });
   } catch (error) {
+    console.error("Upload error:", error);
     return res.status(500).json({ msg: "Internal server error" });
   }
 });
@@ -208,17 +252,11 @@ app.delete("/delete-document/:id", async (req, res) => {
 // Get All Documents API
 app.get("/get-all-documents", async (req, res) => {
   try {
-    const findAllDocuments = await DocumentCategory.find();
-    if (findAllDocuments) {
-      return res.status(200).json({
-        msg: "Documents retrieved successfully",
-        allDocumentsData: findAllDocuments,
-      });
-    } else {
-      return res.status(400).json({ msg: "No documents found" });
-    }
+    const allDocumentsData = await DocumentCategory.find({});
+    res.status(200).json({ allDocumentsData });
   } catch (error) {
-    return res.status(500).json({ msg: "Internal server error" });
+    console.error("Get documents error:", error);
+    res.status(500).json({ msg: "Internal server error" });
   }
 });
 
