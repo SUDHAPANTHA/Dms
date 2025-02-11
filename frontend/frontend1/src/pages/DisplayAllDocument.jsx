@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import DocumentUpdatePopup from "../components/DocumentUpdatePopup";
 import UserSideBar from "../UserPages/UserSideBar";
 import Navbar from "../UserPages/Navbar";
+import { FaDownload, FaEye } from "react-icons/fa";
 
 function DisplayAllDocument() {
   const [documentData, setDocumentData] = useState([]);
@@ -19,6 +20,29 @@ function DisplayAllDocument() {
     setIsPopupOpen(!isPopupOpen);
     setUpdateDocumentData({ title, lastModified, id });
   }
+
+  // Function to handle file preview
+  const handlePreview = (filename) => {
+    window.open(`/proxy/uploads/${filename}`, '_blank');
+  };
+
+  // Function to handle file download
+  const handleDownload = async (filename, originalName) => {
+    try {
+      const response = await fetch(`/proxy/uploads/${filename}`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = originalName || filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      toast.error("Error downloading file");
+    }
+  };
 
   async function getDocumentData() {
     try {
@@ -107,6 +131,7 @@ function DisplayAllDocument() {
                   <th className="p-2 text-center">Category</th>
                   <th className="p-2 text-center">Uploaded By</th>
                   <th className="p-2 text-center">Last Modified</th>
+                  <th className="p-2 text-center">File</th>
                   <th className="p-2 text-center">Action</th>
                 </tr>
               </thead>
@@ -123,6 +148,24 @@ function DisplayAllDocument() {
                       {doc.last_modified
                         ? new Date(doc.last_modified).toLocaleString()
                         : "N/A"}
+                    </td>
+                    <td className="p-4 text-center">
+                      <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handlePreview(doc.file)}
+                          className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                          title="Preview"
+                        >
+                          <FaEye />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(doc.file, doc.title)}
+                          className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                          title="Download"
+                        >
+                          <FaDownload />
+                        </button>
+                      </div>
                     </td>
                     <td className="flex justify-center items-center gap-4 p-9">
                       <button
