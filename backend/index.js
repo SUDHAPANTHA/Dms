@@ -17,31 +17,47 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// Multer configuration
+// Multer configuration for file upload
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, "uploads/");
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + "-" + uniqueSuffix + getFileExtension(file.originalname));
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowedFileTypes = /pdf|doc|docx|txt/;
-  const extname = allowedFileTypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
-  const mimetype = allowedFileTypes.test(file.mimetype);
+function getFileExtension(filename) {
+  return "." + filename.split(".").pop();
+}
 
-  if (extname && mimetype) {
-    return cb(null, true);
+// File filter function
+const fileFilter = (req, file, cb) => {
+  // Allowed file types
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/msword"
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
   } else {
-    cb(new Error("File type is not supported"), false);
+    cb(new Error("Invalid file type"), false);
   }
 };
 
-const upload = multer({ storage, fileFilter });
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // User Registration API
 app.post("/user-register", async (req, res) => {

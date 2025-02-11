@@ -2,21 +2,21 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FaUpload } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import Navbar from "./Navbar";
+import UserSideBar from "./UserSideBar";
 
 function DocumentUploadPage() {
   const [file, setFile] = useState(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [uploadedBy, setUploadedBy] = useState("");
   const [category, setCategory] = useState("");
-  const [lastModified, setLastModified] = useState("");
+  const [uploadedBy, setUploadedBy] = useState("");
   const navigate = useNavigate();
 
-  // Fetch logged-in user from localStorage
   useEffect(() => {
     const userData = localStorage.getItem("userData");
     if (!userData) {
-      navigate("/"); // Redirect to login if no user data
+      navigate("/");
       return;
     }
     const { name } = JSON.parse(userData);
@@ -26,18 +26,42 @@ function DocumentUploadPage() {
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      const allowedTypes = ["image/jpeg", "image/png", "application/pdf"];
+      // Define allowed file types
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+        "application/msword" // .doc
+      ];
+
+      // Get file extension
+      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+      
+      // Check file type
       if (!allowedTypes.includes(selectedFile.type)) {
-        toast.error("Only PDF, JPG, and PNG files are allowed!");
+        toast.error("Only JPG, PNG, PDF, and DOCX files are allowed!");
+        e.target.value = ''; // Clear the input
         return;
       }
+
+      // Check file size (limit to 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (selectedFile.size > maxSize) {
+        toast.error("File size should be less than 5MB!");
+        e.target.value = ''; // Clear the input
+        return;
+      }
+
       setFile(selectedFile);
+      toast.success("File selected successfully!");
     }
   };
 
   async function handleUpload(e) {
     e.preventDefault();
-    if (!file || !title || !description || !category || !lastModified) {
+    if (!file || !title || !description || !category) {
       toast.error("All fields are required!");
       return;
     }
@@ -48,7 +72,7 @@ function DocumentUploadPage() {
     formData.append("description", description);
     formData.append("uploadedBy", uploadedBy);
     formData.append("category", category);
-    formData.append("last_modified", lastModified);
+    formData.append("last_modified", new Date().toISOString());
 
     try {
       const response = await fetch("/proxy/upload-document", {
@@ -57,82 +81,110 @@ function DocumentUploadPage() {
       });
 
       const data = await response.json();
+
       if (response.ok) {
-        toast.success("Document uploaded successfully!");
-        navigate("/user-dashboard");
+        toast.success("Document uploaded successfully");
+        setTitle("");
+        setDescription("");
+        setCategory("");
+        setFile(null);
+        navigate("/displayalldocs");
       } else {
-        toast.error(data.msg || "Upload failed!");
+        toast.error(data.msg || "Upload failed");
       }
     } catch (error) {
-      console.error("Upload error:", error.message);
-      toast.error("Something went wrong!");
+      console.error("Upload error:", error);
+      toast.error("Something went wrong");
     }
   }
 
   return (
-    <div className="flex h-screen justify-center items-center px-8 py-20 bg-gradient-to-r from-white via-orange-200 to-white">
-      <form
-        onSubmit={handleUpload}
-        className="bg-orange-50 p-10 border rounded-lg max-w-md w-full shadow-lg mx-auto"
-      >
-        <h2 className="font-bold text-2xl text-center mb-4">Upload Document</h2>
+    <>
+      <Navbar />
+      <div className="flex">
+        <UserSideBar />
+        <div className="flex-1 p-8">
+          <form onSubmit={handleUpload} className="max-w-2xl mx-auto space-y-6">
+            <h2 className="text-2xl font-bold mb-6">Upload Document</h2>
 
-        <input
-          className="border rounded-lg p-3 w-full mb-2"
-          type="text"
-          placeholder="Title"
-          onChange={(e) => setTitle(e.target.value)}
-          value={title}
-        />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
+                required
+              />
+            </div>
 
-        <textarea
-          className="border rounded-lg p-3 w-full mb-2"
-          placeholder="Description"
-          onChange={(e) => setDescription(e.target.value)}
-          value={description}
-        />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
+                required
+              />
+            </div>
 
-        <input
-          className="border rounded-lg p-3 w-full mb-2 bg-gray-100"
-          type="text"
-          value={uploadedBy}
-          disabled
-        />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
+                required
+              >
+                <option value="">Select Category</option>
+                <option value="Personal">Personal</option>
+                <option value="Financial">Financial</option>
+                <option value="Education">Education</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
 
-        <select
-          className="border rounded-lg p-3 w-full mb-2"
-          onChange={(e) => setCategory(e.target.value)}
-          value={category}
-        >
-          <option value="">Select Category</option>
-          <option value="Personal">Personal</option>
-          <option value="Education">Education</option>
-          <option value="Financial">Financial</option>
-          <option value="Others">Others</option>
-        </select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Uploaded By</label>
+              <input
+                type="text"
+                value={uploadedBy}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 p-2"
+                disabled
+              />
+            </div>
 
-        <input
-          className="border rounded-lg p-3 w-full mb-2"
-          type="date"
-          onChange={(e) => setLastModified(e.target.value)}
-          value={lastModified}
-        />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">File</label>
+              <div className="mt-1">
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-orange-50 file:text-orange-700
+                    hover:file:bg-orange-100"
+                  accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                  required
+                />
+                <p className="mt-1 text-sm text-gray-500">
+                  Accepted formats: JPG, PNG, PDF, DOCX (Max size: 5MB)
+                </p>
+              </div>
+            </div>
 
-        <input
-          className="border rounded-lg p-3 w-full mb-2"
-          type="file"
-          accept=".pdf,.jpg,.jpeg,.png"
-          onChange={handleFileChange}
-        />
-
-        <button
-          type="submit"
-          className="border rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold text-xl p-4 w-full flex justify-center items-center"
-        >
-          <FaUpload className="mr-2" /> Upload
-        </button>
-      </form>
-    </div>
+            <button
+              type="submit"
+              className="w-full bg-customOrange text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+            >
+              <FaUpload /> Upload Document
+            </button>
+          </form>
+        </div>
+      </div>
+    </>
   );
 }
 
