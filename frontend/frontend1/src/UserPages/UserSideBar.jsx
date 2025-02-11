@@ -23,7 +23,7 @@ function UserSideBar() {
           >
             <FaHome size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              All Documents
+              Dashboard
             </span>
           </Link>
           <Link
