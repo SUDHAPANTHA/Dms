@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Pie, Bar } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
-  CategoryScale,
-  LinearScale,
-  BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from "chart.js";
 import Navbar from "./Navbar";
 import UserSideBar from "./UserSideBar";
@@ -16,9 +13,6 @@ import UserSideBar from "./UserSideBar";
 // Register ChartJS components
 ChartJS.register(
   ArcElement,
-  CategoryScale,
-  LinearScale,
-  BarElement,
   Title,
   Tooltip,
   Legend
@@ -27,7 +21,12 @@ ChartJS.register(
 function UserDashboard() {
   const [documentStats, setDocumentStats] = useState({
     totalDocuments: 0,
-    categoryCount: {},
+    categoryCount: {
+      Personal: 0,
+      Education: 0,
+      Financial: 0,
+      Others: 0
+    }
   });
 
   useEffect(() => {
@@ -40,11 +39,20 @@ function UserDashboard() {
       const data = await response.json();
 
       if (data.allDocumentsData) {
-        // Calculate category counts
-        const categoryCount = data.allDocumentsData.reduce((acc, doc) => {
-          acc[doc.category] = (acc[doc.category] || 0) + 1;
-          return acc;
-        }, {});
+        // Initialize counts with 0 for all categories
+        const categoryCount = {
+          Personal: 0,
+          Education: 0,
+          Financial: 0,
+          Others: 0
+        };
+
+        // Count documents for each category
+        data.allDocumentsData.forEach(doc => {
+          if (categoryCount.hasOwnProperty(doc.category)) {
+            categoryCount[doc.category]++;
+          }
+        });
 
         setDocumentStats({
           totalDocuments: data.allDocumentsData.length,
@@ -56,9 +64,18 @@ function UserDashboard() {
     }
   };
 
+  // Calculate percentages for pie chart
+  const calculatePercentage = (count) => {
+    return documentStats.totalDocuments === 0 
+      ? 0 
+      : ((count / documentStats.totalDocuments) * 100).toFixed(1);
+  };
+
   // Pie Chart Data
   const pieChartData = {
-    labels: Object.keys(documentStats.categoryCount),
+    labels: Object.keys(documentStats.categoryCount).map(
+      category => `${category} (${calculatePercentage(documentStats.categoryCount[category])}%)`
+    ),
     datasets: [
       {
         data: Object.values(documentStats.categoryCount),
@@ -79,33 +96,32 @@ function UserDashboard() {
     ],
   };
 
-  // Bar Chart Data
-  const barChartData = {
-    labels: Object.keys(documentStats.categoryCount),
-    datasets: [
-      {
-        label: "Number of Documents",
-        data: Object.values(documentStats.categoryCount),
-        backgroundColor: "rgba(144, 238, 144, 0.6)",
-        borderColor: "rgba(144, 238, 144, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Chart Options
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top",
+        position: "right",
       },
-      title: {
-        display: true,
-        text: "Document Categories Distribution",
-      },
-    },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label;
+            const value = context.raw;
+            const percentage = calculatePercentage(value);
+            return `${label}: ${value} documents (${percentage}%)`;
+          }
+        }
+      }
+    }
   };
+
+  // Fixed categories with their icons and colors
+  const categoryCards = [
+    { name: 'Personal', color: 'bg-green-100 text-green-800' },
+    { name: 'Education', color: 'bg-blue-100 text-blue-800' },
+    { name: 'Financial', color: 'bg-orange-100 text-orange-800' },
+    { name: 'Others', color: 'bg-purple-100 text-purple-800' }
+  ];
 
   return (
     <>
@@ -113,52 +129,33 @@ function UserDashboard() {
       <div className="flex">
         <UserSideBar />
         <div className="flex-1 p-8">
+          {/* Total Documents Card */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-4">Document Statistics</h1>
+            <h1 className="text-2xl font-bold mb-4">Document Statistics</h1>
             <div className="bg-white p-4 rounded-lg shadow-md">
-              <p className="text-xl mb-2">
-                Total Documents:{" "}
-                <span className="font-bold">
-                  {documentStats.totalDocuments}
-                </span>
+              <p className="text-xl">
+                Total Documents: <span className="font-bold text-orange-500">{documentStats.totalDocuments}</span>
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Pie Chart */}
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-4">
-                Category Distribution (Pie Chart)
-              </h2>
-              <div className="h-[300px] flex items-center justify-center">
-                <Pie data={pieChartData} options={options} />
+          {/* Category Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            {categoryCards.map(({ name, color }) => (
+              <div key={name} className={`p-6 rounded-lg shadow-md ${color}`}>
+                <h3 className="text-xl font-bold mb-2">{name}</h3>
+                <p className="text-3xl font-bold">{documentStats.categoryCount[name]}</p>
+                <p className="text-sm mt-1">
+                  {calculatePercentage(documentStats.categoryCount[name])}% of total
+                </p>
               </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Bar Graph */}
-            <div className="bg-white p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold mb-4">
-                Category Distribution (Bar Graph)
-              </h2>
-              <div className="h-[300px] flex items-center justify-center">
-                <Bar data={barChartData} options={options} />
-              </div>
-            </div>
-
-            {/* Category Breakdown */}
-            <div className="bg-white p-4 rounded-lg shadow-md md:col-span-2">
-              <h2 className="text-xl font-bold mb-4">Category Breakdown</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(documentStats.categoryCount).map(
-                  ([category, count]) => (
-                    <div key={category} className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold">{category}</h3>
-                      <p className="text-2xl font-bold">{count}</p>
-                    </div>
-                  )
-                )}
-              </div>
+          {/* Pie Chart */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <div className="h-[400px] flex items-center justify-center">
+              <Pie data={pieChartData} options={options} />
             </div>
           </div>
         </div>
