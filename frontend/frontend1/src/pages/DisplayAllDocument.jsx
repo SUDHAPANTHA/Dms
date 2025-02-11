@@ -10,7 +10,6 @@ function DisplayAllDocument() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [updateDocumentData, setUpdateDocumentData] = useState({
     title: "",
     lastModified: "",
@@ -129,7 +128,6 @@ function DisplayAllDocument() {
               </span>
             </div>
 
-            {/* Search Field */}
             <input
               type="text"
               placeholder="Search by title or category..."
@@ -145,27 +143,43 @@ function DisplayAllDocument() {
                   <th className="p-2 text-center">Category</th>
                   <th className="p-2 text-center">Uploaded By</th>
                   <th className="p-2 text-center">Last Modified</th>
+                  <th className="p-2 text-center">File</th>
                   <th className="p-2 text-center">Action</th>
                 </tr>
               </thead>
-
               <tbody className="text-black">
                 {currentDocuments.map((doc) => (
                   <tr key={doc._id} className="bg-white even:bg-gray-200">
                     <td className="p-4 text-center">{doc.title}</td>
                     <td className="p-4 text-center">{doc.category}</td>
-                    <td className="p-4 text-center">
-                      {doc.uploadedBy || "N/A"}
-                    </td>
+                    <td className="p-4 text-center">{doc.uploadedBy}</td>
                     <td className="p-4 text-center">
                       {doc.last_modified
                         ? new Date(doc.last_modified).toLocaleString()
                         : "N/A"}
                     </td>
+                    <td className="p-4 text-center">
+                      <div className="flex justify-center space-x-2">
+                        <button
+                          onClick={() => handlePreview(doc.file)}
+                          className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                          title="Preview"
+                        >
+                          <FaEye />
+                        </button>
+                        <button
+                          onClick={() => handleDownload(doc.file, doc.title)}
+                          className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                          title="Download"
+                        >
+                          <FaDownload />
+                        </button>
+                      </div>
+                    </td>
                     <td className="flex justify-center items-center gap-4 p-9">
                       <button
                         onClick={() => deleteDocument(doc._id)}
-                        className="bg-red-500 text-white py-2 px-4 rounded-lg"
+                        className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600"
                       >
                         Delete
                       </button>
@@ -173,17 +187,10 @@ function DisplayAllDocument() {
                         onClick={() =>
                           handlePopup(doc.title, doc.last_modified, doc._id)
                         }
-                        className="bg-lime-500 text-white py-2 my-2 px-4 rounded-lg"
+                        className="bg-lime-500 text-white py-2 px-4 rounded-lg hover:bg-lime-600"
                       >
                         Update
                       </button>
-                      {isPopupOpen && (
-                        <DocumentUpdatePopup
-                          close={handlePopup}
-                          updateDocumentData={updateDocumentData}
-                          setUpdateDocumentData={setUpdateDocumentData}
-                        />
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -232,6 +239,14 @@ function DisplayAllDocument() {
                 <FaChevronRight />
               </button>
             </div>
+
+            {isPopupOpen && (
+              <DocumentUpdatePopup
+                close={handlePopup}
+                updateDocumentData={updateDocumentData}
+                setUpdateDocumentData={setUpdateDocumentData}
+              />
+            )}
           </div>
         </div>
       </div>
