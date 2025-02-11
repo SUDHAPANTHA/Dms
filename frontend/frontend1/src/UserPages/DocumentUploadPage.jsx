@@ -136,4 +136,4 @@ function DocumentUploadPage() {
   );
 }
 
-export default DocumentUploadPage;
+export default DocumentUploadPages;
