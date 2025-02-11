@@ -3,12 +3,13 @@ import { toast } from "react-toastify";
 import DocumentUpdatePopup from "../components/DocumentUpdatePopup";
 import UserSideBar from "../UserPages/UserSideBar";
 import Navbar from "../UserPages/Navbar";
-import { FaDownload, FaEye } from "react-icons/fa";
+import { FaDownload, FaEye, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 function DisplayAllDocument() {
   const [documentData, setDocumentData] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [updateDocumentData, setUpdateDocumentData] = useState({
     title: "",
@@ -16,17 +17,18 @@ function DisplayAllDocument() {
     id: "",
   });
 
+  // Pagination settings
+  const documentsPerPage = 5;
+
   function handlePopup(title, lastModified, id) {
     setIsPopupOpen(!isPopupOpen);
     setUpdateDocumentData({ title, lastModified, id });
   }
 
-  // Function to handle file preview
   const handlePreview = (filename) => {
     window.open(`/proxy/uploads/${filename}`, '_blank');
   };
 
-  // Function to handle file download
   const handleDownload = async (filename, originalName) => {
     try {
       const response = await fetch(`/proxy/uploads/${filename}`);
@@ -54,8 +56,11 @@ function DisplayAllDocument() {
       const data = await result.json();
 
       if (data) {
-        console.log("Document Data:", data.allDocumentsData); // Debug log
-        setDocumentData(data.allDocumentsData);
+        // Sort documents by last_modified in descending order (newest first)
+        const sortedDocuments = data.allDocumentsData.sort((a, b) => 
+          new Date(b.last_modified) - new Date(a.last_modified)
+        );
+        setDocumentData(sortedDocuments);
       }
     } catch (error) {
       console.log(error);
@@ -66,21 +71,18 @@ function DisplayAllDocument() {
   async function deleteDocument(id) {
     try {
       const result = await fetch(`/proxy/delete-document/${id}`, {
-        headers: { "content-type": "application/json" },
         method: "DELETE",
       });
 
-      const response = await result.json();
+      const data = await result.json();
 
-      if (response) {
-        toast.success(response.msg);
-        setDocumentData((prevDocumentData) =>
-          prevDocumentData.filter((doc) => doc._id !== id)
-        );
+      if (data) {
+        toast.success("Document deleted successfully");
+        getDocumentData();
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.message || "Something went wrong");
+      toast.error("Something went wrong");
     }
   }
 
@@ -88,13 +90,25 @@ function DisplayAllDocument() {
     getDocumentData();
   }, []);
 
-  // Filter documents based on search term (title or category)
+  // Filter documents based on search term
   const filteredDocuments = documentData.filter((doc) =>
     searchTerm
       ? doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         doc.category.toLowerCase().includes(searchTerm.toLowerCase())
       : true
   );
+
+  // Pagination logic
+  const indexOfLastDocument = currentPage * documentsPerPage;
+  const indexOfFirstDocument = indexOfLastDocument - documentsPerPage;
+  const currentDocuments = filteredDocuments.slice(
+    indexOfFirstDocument,
+    indexOfLastDocument
+  );
+  const totalPages = Math.ceil(filteredDocuments.length / documentsPerPage);
+
+  // Pagination controls
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <>
@@ -131,13 +145,12 @@ function DisplayAllDocument() {
                   <th className="p-2 text-center">Category</th>
                   <th className="p-2 text-center">Uploaded By</th>
                   <th className="p-2 text-center">Last Modified</th>
-                  <th className="p-2 text-center">File</th>
                   <th className="p-2 text-center">Action</th>
                 </tr>
               </thead>
 
               <tbody className="text-black">
-                {filteredDocuments.map((doc) => (
+                {currentDocuments.map((doc) => (
                   <tr key={doc._id} className="bg-white even:bg-gray-200">
                     <td className="p-4 text-center">{doc.title}</td>
                     <td className="p-4 text-center">{doc.category}</td>
@@ -148,24 +161,6 @@ function DisplayAllDocument() {
                       {doc.last_modified
                         ? new Date(doc.last_modified).toLocaleString()
                         : "N/A"}
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex justify-center space-x-2">
-                        <button
-                          onClick={() => handlePreview(doc.file)}
-                          className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-                          title="Preview"
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          onClick={() => handleDownload(doc.file, doc.title)}
-                          className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
-                          title="Download"
-                        >
-                          <FaDownload />
-                        </button>
-                      </div>
                     </td>
                     <td className="flex justify-center items-center gap-4 p-9">
                       <button
@@ -194,6 +189,49 @@ function DisplayAllDocument() {
                 ))}
               </tbody>
             </table>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-full ${
+                  currentPage === 1
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-600'
+                } text-white`}
+              >
+                <FaChevronLeft />
+              </button>
+              
+              <div className="flex gap-2">
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => paginate(index + 1)}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === index + 1
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-full ${
+                  currentPage === totalPages
+                    ? 'bg-gray-300 cursor-not-allowed'
+                    : 'bg-blue-500 hover:bg-blue-600'
+                } text-white`}
+              >
+                <FaChevronRight />
+              </button>
+            </div>
           </div>
         </div>
       </div>
