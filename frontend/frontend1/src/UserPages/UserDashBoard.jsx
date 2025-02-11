@@ -9,6 +9,7 @@ import {
 } from "chart.js";
 import Navbar from "./Navbar";
 import UserSideBar from "./UserSideBar";
+import { FaFolder, FaGraduationCap, FaMoneyBill, FaEllipsisH } from 'react-icons/fa';
 
 // Register ChartJS components
 ChartJS.register(
@@ -54,8 +55,14 @@ function UserDashboard() {
           }
         });
 
+        // Calculate total by summing all category counts
+        const totalDocs = Object.values(categoryCount).reduce((sum, count) => sum + count, 0);
+
+        console.log("Category counts:", categoryCount); // Debug log
+        console.log("Total documents:", totalDocs); // Debug log
+
         setDocumentStats({
-          totalDocuments: data.allDocumentsData.length,
+          totalDocuments: totalDocs,
           categoryCount,
         });
       }
@@ -117,10 +124,26 @@ function UserDashboard() {
 
   // Fixed categories with their icons and colors
   const categoryCards = [
-    { name: 'Personal', color: 'bg-green-100 text-green-800' },
-    { name: 'Education', color: 'bg-blue-100 text-blue-800' },
-    { name: 'Financial', color: 'bg-orange-100 text-orange-800' },
-    { name: 'Others', color: 'bg-purple-100 text-purple-800' }
+    { 
+      name: 'Personal', 
+      color: 'bg-green-100 text-green-800',
+      icon: <FaFolder className="text-2xl mb-2" />
+    },
+    { 
+      name: 'Education', 
+      color: 'bg-blue-100 text-blue-800',
+      icon: <FaGraduationCap className="text-2xl mb-2" />
+    },
+    { 
+      name: 'Financial', 
+      color: 'bg-orange-100 text-orange-800',
+      icon: <FaMoneyBill className="text-2xl mb-2" />
+    },
+    { 
+      name: 'Others', 
+      color: 'bg-purple-100 text-purple-800',
+      icon: <FaEllipsisH className="text-2xl mb-2" />
+    }
   ];
 
   return (
@@ -128,11 +151,11 @@ function UserDashboard() {
       <Navbar />
       <div className="flex">
         <UserSideBar />
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-8 bg-gray-50">
           {/* Total Documents Card */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-4">Document Statistics</h1>
-            <div className="bg-white p-4 rounded-lg shadow-md">
+            <div className="bg-white p-6 rounded-lg shadow-md">
               <p className="text-xl">
                 Total Documents: <span className="font-bold text-orange-500">{documentStats.totalDocuments}</span>
               </p>
@@ -140,12 +163,18 @@ function UserDashboard() {
           </div>
 
           {/* Category Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {categoryCards.map(({ name, color }) => (
-              <div key={name} className={`p-6 rounded-lg shadow-md ${color}`}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            {categoryCards.map(({ name, color, icon }) => (
+              <div 
+                key={name} 
+                className={`p-6 rounded-lg shadow-md ${color} transition-transform hover:scale-105`}
+              >
+                {icon}
                 <h3 className="text-xl font-bold mb-2">{name}</h3>
-                <p className="text-3xl font-bold">{documentStats.categoryCount[name]}</p>
-                <p className="text-sm mt-1">
+                <p className="text-3xl font-bold">
+                  {documentStats.categoryCount[name]}
+                </p>
+                <p className="text-sm mt-2 opacity-75">
                   {calculatePercentage(documentStats.categoryCount[name])}% of total
                 </p>
               </div>
@@ -154,6 +183,7 @@ function UserDashboard() {
 
           {/* Pie Chart */}
           <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-bold mb-4">Category Distribution</h2>
             <div className="h-[400px] flex items-center justify-center">
               <Pie data={pieChartData} options={options} />
             </div>
