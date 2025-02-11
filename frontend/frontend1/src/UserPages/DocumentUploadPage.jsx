@@ -36,9 +36,6 @@ function DocumentUploadPage() {
         "application/msword" // .doc
       ];
 
-      // Get file extension
-      const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
-      
       // Check file type
       if (!allowedTypes.includes(selectedFile.type)) {
         toast.error("Only JPG, PNG, PDF, and DOCX files are allowed!");
@@ -55,7 +52,6 @@ function DocumentUploadPage() {
       }
 
       setFile(selectedFile);
-      toast.success("File selected successfully!");
     }
   };
 
@@ -104,84 +100,76 @@ function DocumentUploadPage() {
       <div className="flex">
         <UserSideBar />
         <div className="flex-1 p-8">
-          <form onSubmit={handleUpload} className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-2xl font-bold mb-6">Upload Document</h2>
+          <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-2xl font-bold mb-6 text-center">Upload Document</h2>
+            <form onSubmit={handleUpload} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Title</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Title</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  required
+                >
+                  <option value="">Select Category</option>
+                  <option value="Personal">Personal</option>
+                  <option value="Financial">Financial</option>
+                  <option value="Education">Education</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2"
-                required
-              >
-                <option value="">Select Category</option>
-                <option value="Personal">Personal</option>
-                <option value="Financial">Financial</option>
-                <option value="Education">Education</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Uploaded By</label>
+                <input
+                  type="text"
+                  value={uploadedBy}
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-50"
+                  disabled
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Uploaded By</label>
-              <input
-                type="text"
-                value={uploadedBy}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 p-2"
-                disabled
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">File</label>
-              <div className="mt-1">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">File</label>
                 <input
                   type="file"
                   onChange={handleFileChange}
-                  className="block w-full text-sm text-gray-500
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-md file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-orange-50 file:text-orange-700
-                    hover:file:bg-orange-100"
+                  className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                   accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                   required
                 />
-                <p className="mt-1 text-sm text-gray-500">
-                  Accepted formats: JPG, PNG, PDF, DOCX (Max size: 5MB)
-                </p>
+                <p className="mt-1 text-xs text-gray-500">Max file size: 5MB</p>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              className="w-full bg-customOrange text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
-            >
-              <FaUpload /> Upload Document
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="w-full bg-customOrange text-white py-2 px-4 rounded-md hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <FaUpload /> Upload Document
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </>
