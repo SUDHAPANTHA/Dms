@@ -3,7 +3,12 @@ import { toast } from "react-toastify";
 import DocumentUpdatePopup from "../components/DocumentUpdatePopup";
 import UserSideBar from "../UserPages/UserSideBar";
 import Navbar from "../UserPages/Navbar";
-import { FaDownload, FaEye, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaDownload,
+  FaEye,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 
 function DisplayAllDocument() {
   const [documentData, setDocumentData] = useState([]);
@@ -25,7 +30,7 @@ function DisplayAllDocument() {
   }
 
   const handlePreview = (filename) => {
-    window.open(`/proxy/uploads/${filename}`, '_blank');
+    window.open(`/proxy/uploads/${filename}`, "_blank");
   };
 
   const handleDownload = async (filename, originalName) => {
@@ -33,7 +38,7 @@ function DisplayAllDocument() {
       const response = await fetch(`/proxy/uploads/${filename}`);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = originalName || filename;
       document.body.appendChild(a);
@@ -56,8 +61,8 @@ function DisplayAllDocument() {
 
       if (data) {
         // Sort documents by last_modified in descending order (newest first)
-        const sortedDocuments = data.allDocumentsData.sort((a, b) => 
-          new Date(b.last_modified) - new Date(a.last_modified)
+        const sortedDocuments = data.allDocumentsData.sort(
+          (a, b) => new Date(b.last_modified) - new Date(a.last_modified)
         );
         setDocumentData(sortedDocuments);
       }
@@ -111,7 +116,6 @@ function DisplayAllDocument() {
 
   return (
     <>
-      <Navbar />
       <div className="flex">
         <UserSideBar />
         <div className="flex-1 bg-gray-200/40 h-screen p-4 overflow-y-scroll">
@@ -204,13 +208,13 @@ function DisplayAllDocument() {
                 disabled={currentPage === 1}
                 className={`p-2 rounded-full ${
                   currentPage === 1
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600'
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
                 } text-white`}
               >
                 <FaChevronLeft />
               </button>
-              
+
               <div className="flex gap-2">
                 {[...Array(totalPages)].map((_, index) => (
                   <button
@@ -218,8 +222,8 @@ function DisplayAllDocument() {
                     onClick={() => paginate(index + 1)}
                     className={`px-4 py-2 rounded-md ${
                       currentPage === index + 1
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                   >
                     {index + 1}
@@ -232,8 +236,8 @@ function DisplayAllDocument() {
                 disabled={currentPage === totalPages}
                 className={`p-2 rounded-full ${
                   currentPage === totalPages
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600'
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
                 } text-white`}
               >
                 <FaChevronRight />
