@@ -260,6 +260,17 @@ app.get("/get-all-documents", async (req, res) => {
   }
 });
 
+// Get All Users API
+app.get("/get-all-users", async (req, res) => {
+  try {
+    const totalUsers = await UserModel.countDocuments();
+    res.status(200).json({ totalUsers });
+  } catch (error) {
+    console.error("Error getting users:", error);
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
 // Connect to database
 connectDB();
 
