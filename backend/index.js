@@ -204,7 +204,36 @@ app.post("/upload-document", upload.single("file"), async (req, res) => {
     return res.status(500).json({ msg: "Internal server error" });
   }
 });
+app.post("/admin-login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ msg: "All fields are required" });
+    }
+
+    const findAdmin = await AdminModel.findOne({ email });
+
+    if (!findAdmin) {
+      return res.status(200).json({ msg: "Invalid Email address" });
+    }
+
+    const isMatch = await bcrypt.compare(password, findAdmin.password);
+
+    if (!isMatch) {
+      return res.status(200).json({ msg: "Invalid Credentials" });
+    }
+    if (findAdmin && isMatch) {
+      return res
+        .status(200)
+        .json({ msg: "Login successful", status: 200, data: findAdmin });
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Internal server error", err: error.message });
+  }
+});
 // Update Document API
 app.patch("/update-document/:id", async (req, res) => {
   try {
