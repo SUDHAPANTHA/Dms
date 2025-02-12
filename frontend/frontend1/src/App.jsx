@@ -15,6 +15,7 @@ import DisplayAllDocument from "./pages/DisplayAllDocument";
 import DocumentUpdatePopup from "./components/DocumentUpdatePopup";
 import Navbar from "./UserPages/Navbar";
 import UserDisplayAllDocument from "./UserPages/UserDisplayAllDocument";
+import DisplayAllUsers from "./pages/DisplayAllUsers";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/popup" element={<DocumentUpdatePopup />} />
         <Route path="/nav" element={<Navbar />} />
         <Route path="/user-docs" element={<UserDisplayAllDocument />} />
+        <Route path="/display-users" element={<DisplayAllUsers />} />
       </Routes>
     </>
   );
