@@ -45,36 +45,6 @@ function UserSideBar() {
               Upload Document
             </span>
           </Link>
-
-          <Link
-            to="/displayallbooks"
-            className="bg-white rounded-xl font-bold flex p-4"
-          >
-            <FaList size={20} />{" "}
-            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              Section Listing
-            </span>
-          </Link>
-
-          <Link
-            to="/displayallbooks"
-            className="bg-white rounded-xl font-bold flex p-4"
-          >
-            <FaUser size={20} />{" "}
-            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              User Management
-            </span>
-          </Link>
-
-          <Link
-            to="/displayallbooks"
-            className="bg-white rounded-xl font-bold flex p-4"
-          >
-            <FaRegFileAlt size={20} />{" "}
-            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              Reports
-            </span>
-          </Link>
         </ul>
       </nav>
     </>
