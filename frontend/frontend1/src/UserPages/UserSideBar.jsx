@@ -27,7 +27,7 @@ function UserSideBar() {
             </span>
           </Link>
           <Link
-            to="/displayalldocs"
+            to="/user-docs"
             className="bg-white rounded-xl font-bold flex p-4"
           >
             <FaCalendar size={20} />{" "}
