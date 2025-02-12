@@ -35,9 +35,10 @@ function DashBoard() {
       const docResponse = await fetch("/proxy/get-all-documents");
       const docData = await docResponse.json();
 
-      // Fetch users
+      // Fetch users - Updated to use the correct response format
       const userResponse = await fetch("/proxy/get-all-users");
       const userData = await userResponse.json();
+      console.log("User data:", userData); // Debug log
 
       if (docData.allDocumentsData && Array.isArray(docData.allDocumentsData)) {
         const categoryCount = {
@@ -55,7 +56,8 @@ function DashBoard() {
 
         setDocumentStats({
           totalDocuments: docData.allDocumentsData.length,
-          totalUsers: userData.totalUsers || 0,
+          // Update this line to use the correct property from userData
+          totalUsers: userData.users ? userData.users.length : 0,
           categoryCount,
         });
       }

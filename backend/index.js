@@ -292,10 +292,12 @@ app.get("/get-all-documents", async (req, res) => {
 // Get All Users API
 app.get("/get-all-users", async (req, res) => {
   try {
-    const users = await UserModel.find({}, "-password");
-    res.status(200).json({ users });
+    const users = await UserModel.find({}).select('-password');
+    console.log("Found users:", users); // Debug log
+    res.status(200).json({ users, success: true });
   } catch (error) {
-    res.status(500).json({ msg: "Internal server error" });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ msg: "Internal server error", success: false });
   }
 });
 

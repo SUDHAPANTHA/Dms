@@ -109,9 +109,6 @@ function DisplayAllUsers() {
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Joined Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -125,20 +122,11 @@ function DisplayAllUsers() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {user.email}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {new Date(user.createdAt).toLocaleDateString()}
-                          </div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
-                            onClick={() =>
-                              handlePopup(user.name, user.email, user._id)
-                            }
+                            onClick={() => handlePopup(user.name, user.email, user._id)}
                             className="text-blue-600 hover:text-blue-900 mr-4"
                           >
                             <FaEdit className="inline-block mr-1" /> Edit

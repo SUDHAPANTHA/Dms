@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import DocumentUpdatePopup from "../components/DocumentUpdatePopup";
-import UserSideBar from "../UserPages/UserSideBar";
+import SideBar from "../components/SideBar";
 import Navbar from "../UserPages/Navbar";
 import {
   FaDownload,
@@ -117,7 +117,7 @@ function DisplayAllDocument() {
   return (
     <>
       <div className="flex">
-        <UserSideBar />
+        <SideBar />
         <div className="flex-1 bg-gray-200/40 h-screen p-4 overflow-y-scroll">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
