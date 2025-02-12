@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import NavBar from "../components/NavBar";
 import SideBar from "../components/SideBar";
-import UserUpdatePopup from "../components/UserUpdatePopup";
+// import UserUpdatePopup from "../components/UserUpdatePopup";
 import {
   FaEdit,
   FaTrash,

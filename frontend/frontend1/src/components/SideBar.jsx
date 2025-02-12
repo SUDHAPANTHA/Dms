@@ -8,6 +8,7 @@ import {
   FaFolder,
   FaRegFileAlt,
   FaList,
+  FaUsers,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
@@ -17,19 +18,23 @@ function SideBar() {
       <nav className="w-64 bg-gradient-to-r from-white via-orange-50 to-white h-screen py-4 px-4">
         <ul className="space-y-4">
           <p className="p-4 text-xl font-bold bg"> Admin Panel</p>
-          <li className="bg-white rounded-xl font-bold flex p-4 mt-24">
-            <FaHome size={20} />{" "}
-            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              DashBoard
-            </span>
-          </li>
           <Link
-            to="/display-user"
+            to="/admin-dashboard"
             className="bg-white rounded-xl font-bold flex p-4"
           >
-            <FaCalendar size={20} />{" "}
+            <FaHome size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              User List
+              Dashboard
+            </span>
+          </Link>
+
+          <Link
+            to="/display-users"
+            className="bg-white rounded-xl font-bold flex p-4"
+          >
+            <FaUsers size={20} />{" "}
+            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
+              All Users
             </span>
           </Link>
 
@@ -39,7 +44,17 @@ function SideBar() {
           >
             <FaFolder size={20} />{" "}
             <span className="ml-3 font-semibold hover:underline hover:decoration-3">
-              All Document
+              All Documents
+            </span>
+          </Link>
+
+          <Link
+            to="/displayallbooks"
+            className="bg-white rounded-xl font-bold flex p-4"
+          >
+            <FaList size={20} />{" "}
+            <span className="ml-3 font-semibold hover:underline hover:decoration-3">
+              Section Listing
             </span>
           </Link>
         </ul>
@@ -47,4 +62,5 @@ function SideBar() {
     </>
   );
 }
+
 export default SideBar;
