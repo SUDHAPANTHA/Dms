@@ -292,10 +292,30 @@ app.get("/get-all-documents", async (req, res) => {
 // Get All Users API
 app.get("/get-all-users", async (req, res) => {
   try {
-    const totalUsers = await UserModel.countDocuments();
-    res.status(200).json({ totalUsers });
+    const users = await UserModel.find({}, "-password");
+    res.status(200).json({ users });
   } catch (error) {
-    console.error("Error getting users:", error);
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+// Update user
+app.put("/update-user/:id", async (req, res) => {
+  try {
+    const { name, email } = req.body;
+    await UserModel.findByIdAndUpdate(req.params.id, { name, email });
+    res.status(200).json({ msg: "User updated successfully" });
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+// Delete user
+app.delete("/delete-user/:id", async (req, res) => {
+  try {
+    await UserModel.findByIdAndDelete(req.params.id);
+    res.status(200).json({ msg: "User deleted successfully" });
+  } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
   }
 });
