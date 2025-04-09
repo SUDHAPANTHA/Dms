@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Title, Tooltip, Legend } from "chart.js";
-import NavBar from "../components/NavBar";
 import SideBar from "../components/SideBar";
 import {
   FaFolder,
@@ -10,6 +9,7 @@ import {
   FaEllipsisH,
   FaUsers,
 } from "react-icons/fa";
+import AdminNavbar from "./AdminNavbar";
 
 ChartJS.register(ArcElement, Title, Tooltip, Legend);
 
@@ -152,7 +152,7 @@ function DashBoard() {
 
   return (
     <>
-      <NavBar />
+      <AdminNavbar />
       <div className="flex">
         <SideBar />
         <div className="flex-1 p-8 bg-gray-50">
